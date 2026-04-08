@@ -1,18 +1,18 @@
 import React from "react";
-import { AbsoluteFill } from "remotion";
+import { AbsoluteFill, Video, staticFile } from "remotion";
 import { GlitchHighlight } from "../components/captions/GlitchHighlight";
 import type { GlitchHighlightWord } from "../components/captions/GlitchHighlight";
-import type { CaptionPage } from "../types/captions";
+import type { TikTokPage } from "../types/captions";
 
-const SAMPLE_PAGES: CaptionPage[] = [
+const BOTTOM_PAGES: TikTokPage[] = [
   {
     text: "break the system",
     startMs: 100,
     durationMs: 1200,
     tokens: [
-      { text: "break", start: 100, end: 350 },
-      { text: "the", start: 350, end: 520 },
-      { text: "system", start: 520, end: 1100 },
+      { text: "break", fromMs: 100, toMs: 350 },
+      { text: "the", fromMs: 350, toMs: 520 },
+      { text: "system", fromMs: 520, toMs: 1100 },
     ],
   },
   {
@@ -20,10 +20,10 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 1400,
     durationMs: 1200,
     tokens: [
-      { text: "before", start: 1400, end: 1600 },
-      { text: "it", start: 1600, end: 1720 },
-      { text: "breaks", start: 1720, end: 2200 },
-      { text: "you", start: 2200, end: 2450 },
+      { text: "before", fromMs: 1400, toMs: 1600 },
+      { text: "it", fromMs: 1600, toMs: 1720 },
+      { text: "breaks", fromMs: 1720, toMs: 2200 },
+      { text: "you", fromMs: 2200, toMs: 2450 },
     ],
   },
   {
@@ -31,10 +31,10 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 2700,
     durationMs: 1400,
     tokens: [
-      { text: "your", start: 2700, end: 2900 },
-      { text: "potential", start: 2900, end: 3200 },
-      { text: "is", start: 3200, end: 3320 },
-      { text: "unlimited", start: 3320, end: 3900 },
+      { text: "your", fromMs: 2700, toMs: 2900 },
+      { text: "potential", fromMs: 2900, toMs: 3200 },
+      { text: "is", fromMs: 3200, toMs: 3320 },
+      { text: "unlimited", fromMs: 3320, toMs: 3900 },
     ],
   },
   {
@@ -42,19 +42,22 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 4200,
     durationMs: 1200,
     tokens: [
-      { text: "stop", start: 4200, end: 4400 },
-      { text: "waiting", start: 4400, end: 4700 },
-      { text: "for", start: 4700, end: 4850 },
-      { text: "permission", start: 4850, end: 5300 },
+      { text: "stop", fromMs: 4200, toMs: 4400 },
+      { text: "waiting", fromMs: 4400, toMs: 4700 },
+      { text: "for", fromMs: 4700, toMs: 4850 },
+      { text: "permission", fromMs: 4850, toMs: 5300 },
     ],
   },
+];
+
+const TOP_PAGES: TikTokPage[] = [
   {
     text: "execute now",
     startMs: 5500,
     durationMs: 1100,
     tokens: [
-      { text: "execute", start: 5500, end: 6100 },
-      { text: "now", start: 6100, end: 6500 },
+      { text: "execute", fromMs: 5500, toMs: 6100 },
+      { text: "now", fromMs: 6100, toMs: 6500 },
     ],
   },
   {
@@ -62,10 +65,10 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 6700,
     durationMs: 1200,
     tokens: [
-      { text: "fear", start: 6700, end: 6950 },
-      { text: "is", start: 6950, end: 7080 },
-      { text: "a", start: 7080, end: 7180 },
-      { text: "liar", start: 7180, end: 7700 },
+      { text: "fear", fromMs: 6700, toMs: 6950 },
+      { text: "is", fromMs: 6950, toMs: 7080 },
+      { text: "a", fromMs: 7080, toMs: 7180 },
+      { text: "liar", fromMs: 7180, toMs: 7700 },
     ],
   },
   {
@@ -73,10 +76,10 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 7900,
     durationMs: 1300,
     tokens: [
-      { text: "destroy", start: 7900, end: 8450 },
-      { text: "your", start: 8450, end: 8620 },
-      { text: "comfort", start: 8620, end: 8900 },
-      { text: "zone", start: 8900, end: 9100 },
+      { text: "destroy", fromMs: 7900, toMs: 8450 },
+      { text: "your", fromMs: 8450, toMs: 8620 },
+      { text: "comfort", fromMs: 8620, toMs: 8900 },
+      { text: "zone", fromMs: 8900, toMs: 9100 },
     ],
   },
   {
@@ -84,10 +87,10 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 9300,
     durationMs: 1200,
     tokens: [
-      { text: "levels", start: 9300, end: 9550 },
-      { text: "to", start: 9550, end: 9680 },
-      { text: "this", start: 9680, end: 9850 },
-      { text: "game", start: 9850, end: 10300 },
+      { text: "levels", fromMs: 9300, toMs: 9550 },
+      { text: "to", fromMs: 9550, toMs: 9680 },
+      { text: "this", fromMs: 9680, toMs: 9850 },
+      { text: "game", fromMs: 9850, toMs: 10300 },
     ],
   },
 ];
@@ -104,11 +107,22 @@ const HIGHLIGHT_WORDS: GlitchHighlightWord[] = [
 
 export const GlitchHighlightDemo: React.FC = () => {
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
+    <AbsoluteFill>
+      <Video
+        src={staticFile("sample-video.mp4")}
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
       <GlitchHighlight
-        pages={SAMPLE_PAGES}
+        pages={BOTTOM_PAGES}
         highlightWords={HIGHLIGHT_WORDS}
         glitchDurationFrames={14}
+        position="bottom"
+      />
+      <GlitchHighlight
+        pages={TOP_PAGES}
+        highlightWords={HIGHLIGHT_WORDS}
+        glitchDurationFrames={14}
+        position="top"
       />
     </AbsoluteFill>
   );

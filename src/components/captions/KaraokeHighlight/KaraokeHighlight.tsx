@@ -1,10 +1,11 @@
 import React, { useMemo } from "react";
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
-import type { CaptionPage } from "../shared/types";
+import type { TikTokPage } from "../shared/types";
 import type { KaraokeHighlightProps, KaraokeColorScheme } from "./types";
 import { KARAOKE_SCHEMES } from "./types";
 import { KaraokeWord } from "./KaraokeWord";
 import { msToFrames } from "../../../utils/timing";
+import { getCaptionPositionStyle } from "../../../utils/captionPosition";
 
 function resolveColorScheme(
   scheme: KaraokeHighlightProps["scheme"],
@@ -27,7 +28,7 @@ function resolveColorScheme(
 
 /** Renders a single page of karaoke words inside a pill */
 const KaraokePage: React.FC<{
-  page: CaptionPage;
+  page: TikTokPage;
   pageIndex: number;
   colorScheme: KaraokeColorScheme;
   showPill: boolean;
@@ -118,7 +119,7 @@ const KaraokePage: React.FC<{
       >
         {page.tokens.map((token, idx) => {
           const isActive =
-            currentTimeMs >= token.start && currentTimeMs < token.end;
+            currentTimeMs >= token.fromMs && currentTimeMs < token.toMs;
 
           return (
             <KaraokeWord
@@ -161,24 +162,17 @@ export const KaraokeHighlight: React.FC<KaraokeHighlightProps> = ({
     [scheme, customScheme],
   );
 
-  // Position styles
-  const positionStyle: React.CSSProperties =
-    position === "top"
-      ? { justifyContent: "flex-start", paddingTop: 200 }
-      : position === "center"
-        ? { justifyContent: "center" }
-        : { justifyContent: "flex-end", paddingBottom: 350 };
+  const positionStyle = getCaptionPositionStyle(position);
 
   return (
     <AbsoluteFill
       style={{
         display: "flex",
         alignItems: "center",
-        padding: "0 60px",
         ...positionStyle,
       }}
     >
-      <div style={{ position: "relative", width: "100%", height: 200 }}>
+      <div style={{ position: "relative", width: "100%", minHeight: 200 }}>
         {pages.map((page, pageIndex) => {
           const pageStartFrame = msToFrames(page.startMs, fps);
           const pageDurationFrames = msToFrames(page.durationMs, fps);

@@ -1,7 +1,7 @@
 import React from "react";
 import { useCurrentFrame, useVideoConfig, spring, interpolate } from "remotion";
 import type { SpringConfig } from "remotion";
-import type { CaptionToken } from "../shared/types";
+import type { TikTokToken } from "../shared/types";
 import type { KaraokeColorScheme } from "./types";
 import { FONT_FAMILIES } from "../../../utils/fonts";
 
@@ -13,7 +13,7 @@ const KARAOKE_SPRING: SpringConfig = {
 };
 
 interface KaraokeWordProps {
-  token: CaptionToken;
+  token: TikTokToken;
   index: number;
   isActive: boolean;
   colorScheme: KaraokeColorScheme;
@@ -37,7 +37,7 @@ export const KaraokeWord: React.FC<KaraokeWordProps> = ({
   const { fps } = useVideoConfig();
 
   // Scale pulse when word becomes active
-  const tokenStartFrame = Math.round((token.start / 1000) * fps);
+  const tokenStartFrame = Math.round((token.fromMs / 1000) * fps);
   const framesSinceActive = frame - tokenStartFrame;
 
   const springVal =
@@ -109,7 +109,7 @@ export const KaraokeWord: React.FC<KaraokeWordProps> = ({
         fontFamily: FONT_FAMILIES.montserrat,
         fontWeight: 800,
         fontSize,
-        textTransform: "uppercase",
+        textTransform: "none",
         letterSpacing: "-0.01em",
         lineHeight: 1.25,
         color,

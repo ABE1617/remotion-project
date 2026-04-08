@@ -1,11 +1,11 @@
 import React from "react";
-import type { CaptionToken } from "./types";
+import type { TikTokToken } from "./types";
 
 interface WordRendererProps {
-  tokens: CaptionToken[];
+  tokens: TikTokToken[];
   currentTimeMs: number;
   renderWord: (
-    token: CaptionToken,
+    token: TikTokToken,
     index: number,
     isActive: boolean,
     progress: number,
@@ -25,13 +25,13 @@ export const WordRenderer: React.FC<WordRendererProps> = ({
     <>
       {tokens.map((token, index) => {
         const isActive =
-          currentTimeMs >= token.start && currentTimeMs < token.end;
-        const tokenDuration = token.end - token.start;
+          currentTimeMs >= token.fromMs && currentTimeMs < token.toMs;
+        const tokenDuration = token.toMs - token.fromMs;
         const progress =
           tokenDuration > 0
             ? Math.max(
                 0,
-                Math.min(1, (currentTimeMs - token.start) / tokenDuration),
+                Math.min(1, (currentTimeMs - token.fromMs) / tokenDuration),
               )
             : 0;
 

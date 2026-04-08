@@ -8,11 +8,12 @@ import {
   useVideoConfig,
 } from "remotion";
 import type { SpringConfig } from "remotion";
-import type { CaptionToken, CaptionPage } from "../shared/types";
+import type { TikTokToken, TikTokPage } from "../shared/types";
 import type { GlitchHighlightProps, GlitchColorPreset } from "./types";
 import { GLITCH_PRESETS } from "./types";
 import { FONT_FAMILIES } from "../../../utils/fonts";
 import { msToFrames } from "../../../utils/timing";
+import { getCaptionPositionStyle } from "../../../utils/captionPosition";
 
 function normalizeWord(text: string): string {
   return text.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -38,7 +39,7 @@ const SLIDE_SPRING: SpringConfig = {
   overshootClamping: false,
 };
 
-/** Normal word -- same slide-in as TexturedHighlight */
+/** Normal word -- same slide-in as GradientHighlight */
 const NormalWord: React.FC<{
   text: string;
   fontSize: number;
@@ -55,9 +56,9 @@ const NormalWord: React.FC<{
       fontSize,
       fontWeight: 900,
       color: "rgba(255,255,255,0.9)",
-      textTransform: "uppercase",
+      textTransform: "none",
       letterSpacing: `${letterSpacing}em`,
-      textShadow: `${outlineShadow}, 0 4px 8px rgba(0,0,0,0.5)`,
+      textShadow: "0 4px 8px rgba(0,0,0,0.5)",
       transform: `translateX(${xOffset}px)`,
       transformOrigin: "center center",
       opacity,
@@ -97,7 +98,6 @@ const GlitchWord: React.FC<{
   xOffset: number;
 }> = ({ text, fontSize, color, glitchProgress, localFrame, opacity, xOffset }) => {
   const glitchFontSize = Math.round(fontSize * 1.8);
-  const thickOutline = buildOutlineShadow(5, "#000000");
 
   // Glitch intensity: alternates between glitch and clean moments
   // Pattern: GLITCH -> clean -> GLITCH -> clean -> small glitch -> settle
@@ -173,7 +173,7 @@ const GlitchWord: React.FC<{
     fontFamily: FONT_FAMILIES.bebasNeue,
     fontSize: glitchFontSize,
     fontWeight: 400,
-    textTransform: "uppercase",
+    textTransform: "none",
     letterSpacing: "0.06em",
     whiteSpace: "nowrap",
     lineHeight: 1.1,
@@ -183,9 +183,9 @@ const GlitchWord: React.FC<{
     width: "100%",
   };
 
-  // 6 slices with per-frame random displacement
-  const sliceSeeds = [r1, r2, r3, r4, r5, r6];
-  const sliceCount = 6;
+  // 3 slices with per-frame random displacement
+  const sliceSeeds = [r1, r2, r3];
+  const sliceCount = 3;
   const slices = Array.from({ length: sliceCount }, (_, i) => {
     const sliceHeight = 100 / sliceCount;
     const top = i * sliceHeight;
@@ -210,7 +210,7 @@ const GlitchWord: React.FC<{
           fontFamily: FONT_FAMILIES.bebasNeue,
           fontSize: glitchFontSize,
           fontWeight: 400,
-          textTransform: "uppercase",
+          textTransform: "none",
           letterSpacing: "0.06em",
           visibility: "hidden",
           whiteSpace: "nowrap",
@@ -220,35 +220,35 @@ const GlitchWord: React.FC<{
         {text}
       </span>
 
-      {/* Red ghost */}
-      <span
-        style={{
-          ...sharedFont,
-          color: "#FF0040",
-          opacity: ghostOpacity,
-          transform: `translate(${-rgbX}px, ${-rgbY}px)`,
-          clipPath: `inset(0% 0% ${50 + r5 * 20}% 0%)`,
-          mixBlendMode: "screen",
-        }}
-      >
-        {text}
-      </span>
-
-      {/* Blue ghost */}
-      <span
-        style={{
-          ...sharedFont,
-          color: "#0044FF",
-          opacity: ghostOpacity,
-          transform: `translate(${rgbX}px, ${rgbY}px)`,
-          clipPath: `inset(${50 - r6 * 20}% 0% 0% 0%)`,
-          mixBlendMode: "screen",
-        }}
-      >
-        {text}
-      </span>
-
-      {/* Green ghost -- subtle, only during high intensity */}
+      {/* RGB ghost layers — only render when intensity is noticeable */}
+      {intensity > 0.1 && (
+        <>
+          <span
+            style={{
+              ...sharedFont,
+              color: "#FF0040",
+              opacity: ghostOpacity,
+              transform: `translate(${-rgbX}px, ${-rgbY}px)`,
+              clipPath: `inset(0% 0% ${50 + r5 * 20}% 0%)`,
+              mixBlendMode: "screen",
+            }}
+          >
+            {text}
+          </span>
+          <span
+            style={{
+              ...sharedFont,
+              color: "#0044FF",
+              opacity: ghostOpacity,
+              transform: `translate(${rgbX}px, ${rgbY}px)`,
+              clipPath: `inset(${50 - r6 * 20}% 0% 0% 0%)`,
+              mixBlendMode: "screen",
+            }}
+          >
+            {text}
+          </span>
+        </>
+      )}
       {intensity > 0.3 && (
         <span
           style={{
@@ -271,7 +271,7 @@ const GlitchWord: React.FC<{
             style={{
               ...sharedFont,
               color: mainColor,
-              textShadow: `${thickOutline}, 0 4px 10px rgba(0,0,0,0.6)`,
+              textShadow: "0 4px 10px rgba(0,0,0,0.6)",
               transform: `translateX(${slice.shift}px)`,
               clipPath: `inset(${slice.top}% 0% ${slice.bottom}% 0%)`,
             }}
@@ -284,7 +284,7 @@ const GlitchWord: React.FC<{
           style={{
             ...sharedFont,
             color,
-            textShadow: `${thickOutline}, 0 4px 10px rgba(0,0,0,0.6)`,
+            textShadow: "0 4px 10px rgba(0,0,0,0.6)",
           }}
         >
           {text}
@@ -317,7 +317,7 @@ const GlitchWord: React.FC<{
 
 /** Animated word wrapper */
 const AnimatedWord: React.FC<{
-  token: CaptionToken;
+  token: TikTokToken;
   globalIndex: number;
   pageStartMs: number;
   isGlitch: boolean;
@@ -344,7 +344,7 @@ const AnimatedWord: React.FC<{
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const tokenEntryFrame = msToFrames(token.start - pageStartMs, fps);
+  const tokenEntryFrame = msToFrames(token.fromMs - pageStartMs, fps);
   const delayedEntry = tokenEntryFrame + globalIndex * staggerDelayFrames;
   const localFrame = frame - delayedEntry;
 
@@ -397,7 +397,7 @@ const AnimatedWord: React.FC<{
 
 /** Page layout -- normal words inline, glitch words on own line */
 const GlitchPage: React.FC<{
-  page: CaptionPage;
+  page: TikTokPage;
   highlightMap: Map<string, GlitchColorPreset>;
   fontFamily: string;
   fontSize: number;
@@ -415,8 +415,8 @@ const GlitchPage: React.FC<{
   staggerDelayFrames,
   glitchDurationFrames,
 }) => {
-  const groups: { tokens: CaptionToken[]; isGlitch: boolean; color: string }[] = [];
-  let currentNormal: CaptionToken[] = [];
+  const groups: { tokens: TikTokToken[]; isGlitch: boolean; color: string }[] = [];
+  let currentNormal: TikTokToken[] = [];
 
   for (const token of page.tokens) {
     const match = highlightMap.get(normalizeWord(token.text));
@@ -437,7 +437,7 @@ const GlitchPage: React.FC<{
   let globalIndex = 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, marginTop: 96, maxWidth: "100%", overflow: "hidden" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, maxWidth: "100%", overflow: "hidden" }}>
       {groups.map((group, groupIdx) => {
         if (group.isGlitch) {
           const token = group.tokens[0];
@@ -526,12 +526,7 @@ export const GlitchHighlight: React.FC<GlitchHighlightProps> = ({
     [strokeWidth, strokeColor],
   );
 
-  const positionStyle: React.CSSProperties =
-    position === "top"
-      ? { justifyContent: "flex-start", paddingTop: 160 }
-      : position === "bottom"
-        ? { justifyContent: "flex-end", paddingBottom: 200 }
-        : { justifyContent: "center" };
+  const positionStyle = getCaptionPositionStyle(position as "top" | "center" | "bottom");
 
   return (
     <AbsoluteFill>
@@ -545,10 +540,11 @@ export const GlitchHighlight: React.FC<GlitchHighlightProps> = ({
             key={pageIndex}
             from={startFrame}
             durationInFrames={durationFrames}
+            premountFor={10}
             name={page.tokens.map((t) => t.text).join(" ")}
           >
             <AbsoluteFill
-              style={{ display: "flex", alignItems: "center", padding: "0 60px", ...positionStyle }}
+              style={{ display: "flex", alignItems: "center", ...positionStyle }}
             >
               <GlitchPage
                 page={page}

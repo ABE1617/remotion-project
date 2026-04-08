@@ -1,6 +1,6 @@
 export type {
-  CaptionToken,
-  CaptionPage,
+  TikTokToken,
+  TikTokPage,
   CaptionStyleProps,
 } from "./captions";
 

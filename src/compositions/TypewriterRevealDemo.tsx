@@ -1,22 +1,22 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
 import { TypewriterReveal } from "../components/captions/TypewriterReveal";
-import type { CaptionPage } from "../types/captions";
+import type { TikTokPage } from "../types/captions";
 
 // Suspenseful storytelling text -- slower pacing, narrative feel
-const SAMPLE_PAGES: CaptionPage[] = [
+const SAMPLE_PAGES: TikTokPage[] = [
   {
     text: "the last thing she said to me",
     startMs: 400,
     durationMs: 2200,
     tokens: [
-      { text: "the", start: 400, end: 650 },
-      { text: "last", start: 650, end: 950 },
-      { text: "thing", start: 950, end: 1250 },
-      { text: "she", start: 1250, end: 1500 },
-      { text: "said", start: 1500, end: 1800 },
-      { text: "to", start: 1800, end: 2000 },
-      { text: "me", start: 2000, end: 2300 },
+      { text: "the", fromMs: 400, toMs: 650 },
+      { text: "last", fromMs: 650, toMs: 950 },
+      { text: "thing", fromMs: 950, toMs: 1250 },
+      { text: "she", fromMs: 1250, toMs: 1500 },
+      { text: "said", fromMs: 1500, toMs: 1800 },
+      { text: "to", fromMs: 1800, toMs: 2000 },
+      { text: "me", fromMs: 2000, toMs: 2300 },
     ],
   },
   {
@@ -24,9 +24,9 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 2800,
     durationMs: 1800,
     tokens: [
-      { text: "before", start: 2800, end: 3200 },
-      { text: "she", start: 3200, end: 3550 },
-      { text: "disappeared", start: 3550, end: 4300 },
+      { text: "before", fromMs: 2800, toMs: 3200 },
+      { text: "she", fromMs: 3200, toMs: 3550 },
+      { text: "disappeared", fromMs: 3550, toMs: 4300 },
     ],
   },
   {
@@ -34,28 +34,28 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 4800,
     durationMs: 1700,
     tokens: [
-      { text: "was", start: 4800, end: 5100 },
-      { text: "a", start: 5100, end: 5300 },
-      { text: "single", start: 5300, end: 5750 },
-      { text: "word", start: 5750, end: 6200 },
+      { text: "was", fromMs: 4800, toMs: 5100 },
+      { text: "a", fromMs: 5100, toMs: 5300 },
+      { text: "single", fromMs: 5300, toMs: 5750 },
+      { text: "word", fromMs: 5750, toMs: 6200 },
     ],
   },
   {
     text: "run",
     startMs: 6700,
     durationMs: 1200,
-    tokens: [{ text: "run", start: 6700, end: 7200 }],
+    tokens: [{ text: "run", fromMs: 6700, toMs: 7200 }],
   },
   {
     text: "and i never looked back",
     startMs: 8100,
     durationMs: 2000,
     tokens: [
-      { text: "and", start: 8100, end: 8350 },
-      { text: "i", start: 8350, end: 8500 },
-      { text: "never", start: 8500, end: 8850 },
-      { text: "looked", start: 8850, end: 9250 },
-      { text: "back", start: 9250, end: 9700 },
+      { text: "and", fromMs: 8100, toMs: 8350 },
+      { text: "i", fromMs: 8350, toMs: 8500 },
+      { text: "never", fromMs: 8500, toMs: 8850 },
+      { text: "looked", fromMs: 8850, toMs: 9250 },
+      { text: "back", fromMs: 9250, toMs: 9700 },
     ],
   },
   {
@@ -63,9 +63,9 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 10200,
     durationMs: 1500,
     tokens: [
-      { text: "not", start: 10200, end: 10500 },
-      { text: "even", start: 10500, end: 10850 },
-      { text: "once", start: 10850, end: 11300 },
+      { text: "not", fromMs: 10200, toMs: 10500 },
+      { text: "even", fromMs: 10500, toMs: 10850 },
+      { text: "once", fromMs: 10850, toMs: 11300 },
     ],
   },
 ];

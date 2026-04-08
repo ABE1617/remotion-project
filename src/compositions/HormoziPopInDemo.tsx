@@ -1,21 +1,19 @@
 import React from "react";
-import { AbsoluteFill } from "remotion";
+import { AbsoluteFill, Video, staticFile } from "remotion";
 import { HormoziPopIn } from "../components/captions/HormoziPopIn";
 import type { HormoziHighlightWord } from "../components/captions/HormoziPopIn";
-import type { CaptionPage } from "../types/captions";
+import type { TikTokPage } from "../types/captions";
 
-// Long realistic Hormozi-style monologue with precise word-level timing
-// Each page is a natural phrase break -- no overlaps, no gaps in speech feel
-const SAMPLE_PAGES: CaptionPage[] = [
+const BOTTOM_PAGES: TikTokPage[] = [
   {
     text: "you need to stop",
     startMs: 100,
     durationMs: 900,
     tokens: [
-      { text: "you", start: 100, end: 280 },
-      { text: "need", start: 280, end: 460 },
-      { text: "to", start: 460, end: 580 },
-      { text: "stop", start: 580, end: 850 },
+      { text: "you", fromMs: 100, toMs: 280 },
+      { text: "need", fromMs: 280, toMs: 460 },
+      { text: "to", fromMs: 460, toMs: 580 },
+      { text: "stop", fromMs: 580, toMs: 850 },
     ],
   },
   {
@@ -23,8 +21,8 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 1050,
     durationMs: 800,
     tokens: [
-      { text: "making", start: 1050, end: 1350 },
-      { text: "excuses", start: 1350, end: 1750 },
+      { text: "making", fromMs: 1050, toMs: 1350 },
+      { text: "excuses", fromMs: 1350, toMs: 1750 },
     ],
   },
   {
@@ -32,9 +30,9 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 1900,
     durationMs: 850,
     tokens: [
-      { text: "and", start: 1900, end: 2050 },
-      { text: "start", start: 2050, end: 2280 },
-      { text: "taking", start: 2280, end: 2600 },
+      { text: "and", fromMs: 1900, toMs: 2050 },
+      { text: "start", fromMs: 2050, toMs: 2280 },
+      { text: "taking", fromMs: 2280, toMs: 2600 },
     ],
   },
   {
@@ -42,8 +40,8 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 2750,
     durationMs: 800,
     tokens: [
-      { text: "massive", start: 2750, end: 3100 },
-      { text: "action", start: 3100, end: 3450 },
+      { text: "massive", fromMs: 2750, toMs: 3100 },
+      { text: "action", fromMs: 3100, toMs: 3450 },
     ],
   },
   {
@@ -51,9 +49,9 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 3600,
     durationMs: 850,
     tokens: [
-      { text: "every", start: 3600, end: 3820 },
-      { text: "single", start: 3820, end: 4050 },
-      { text: "day", start: 4050, end: 4350 },
+      { text: "every", fromMs: 3600, toMs: 3820 },
+      { text: "single", fromMs: 3820, toMs: 4050 },
+      { text: "day", fromMs: 4050, toMs: 4350 },
     ],
   },
   {
@@ -61,20 +59,23 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 4500,
     durationMs: 900,
     tokens: [
-      { text: "the", start: 4500, end: 4620 },
-      { text: "people", start: 4620, end: 4850 },
-      { text: "who", start: 4850, end: 5000 },
-      { text: "win", start: 5000, end: 5300 },
+      { text: "the", fromMs: 4500, toMs: 4620 },
+      { text: "people", fromMs: 4620, toMs: 4850 },
+      { text: "who", fromMs: 4850, toMs: 5000 },
+      { text: "win", fromMs: 5000, toMs: 5300 },
     ],
   },
+];
+
+const TOP_PAGES: TikTokPage[] = [
   {
     text: "are not smarter",
     startMs: 5450,
     durationMs: 800,
     tokens: [
-      { text: "are", start: 5450, end: 5580 },
-      { text: "not", start: 5580, end: 5730 },
-      { text: "smarter", start: 5730, end: 6100 },
+      { text: "are", fromMs: 5450, toMs: 5580 },
+      { text: "not", fromMs: 5580, toMs: 5730 },
+      { text: "smarter", fromMs: 5730, toMs: 6100 },
     ],
   },
   {
@@ -82,8 +83,8 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 6250,
     durationMs: 600,
     tokens: [
-      { text: "than", start: 6250, end: 6450 },
-      { text: "you", start: 6450, end: 6750 },
+      { text: "than", fromMs: 6250, toMs: 6450 },
+      { text: "you", fromMs: 6450, toMs: 6750 },
     ],
   },
   {
@@ -91,9 +92,9 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 6900,
     durationMs: 850,
     tokens: [
-      { text: "they", start: 6900, end: 7050 },
-      { text: "just", start: 7050, end: 7230 },
-      { text: "outwork", start: 7230, end: 7600 },
+      { text: "they", fromMs: 6900, toMs: 7050 },
+      { text: "just", fromMs: 7050, toMs: 7230 },
+      { text: "outwork", fromMs: 7230, toMs: 7600 },
     ],
   },
   {
@@ -101,8 +102,8 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 7750,
     durationMs: 700,
     tokens: [
-      { text: "everyone", start: 7750, end: 8100 },
-      { text: "else", start: 8100, end: 8350 },
+      { text: "everyone", fromMs: 7750, toMs: 8100 },
+      { text: "else", fromMs: 8100, toMs: 8350 },
     ],
   },
   {
@@ -110,10 +111,10 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 8500,
     durationMs: 900,
     tokens: [
-      { text: "that", start: 8500, end: 8650 },
-      { text: "is", start: 8650, end: 8780 },
-      { text: "the", start: 8780, end: 8900 },
-      { text: "secret", start: 8900, end: 9250 },
+      { text: "that", fromMs: 8500, toMs: 8650 },
+      { text: "is", fromMs: 8650, toMs: 8780 },
+      { text: "the", fromMs: 8780, toMs: 8900 },
+      { text: "secret", fromMs: 8900, toMs: 9250 },
     ],
   },
   {
@@ -121,10 +122,10 @@ const SAMPLE_PAGES: CaptionPage[] = [
     startMs: 9400,
     durationMs: 900,
     tokens: [
-      { text: "nobody", start: 9400, end: 9620 },
-      { text: "wants", start: 9620, end: 9830 },
-      { text: "to", start: 9830, end: 9950 },
-      { text: "hear", start: 9950, end: 10200 },
+      { text: "nobody", fromMs: 9400, toMs: 9620 },
+      { text: "wants", fromMs: 9620, toMs: 9830 },
+      { text: "to", fromMs: 9830, toMs: 9950 },
+      { text: "hear", fromMs: 9950, toMs: 10200 },
     ],
   },
 ];
@@ -141,10 +142,20 @@ const HIGHLIGHT_WORDS: HormoziHighlightWord[] = [
 
 export const HormoziPopInDemo: React.FC = () => {
   return (
-    <AbsoluteFill style={{ backgroundColor: "#111111" }}>
+    <AbsoluteFill>
+      <Video
+        src={staticFile("sample-video.mp4")}
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
       <HormoziPopIn
-        pages={SAMPLE_PAGES}
+        pages={BOTTOM_PAGES}
         highlightWords={HIGHLIGHT_WORDS}
+        position="bottom"
+      />
+      <HormoziPopIn
+        pages={TOP_PAGES}
+        highlightWords={HIGHLIGHT_WORDS}
+        position="top"
       />
     </AbsoluteFill>
   );

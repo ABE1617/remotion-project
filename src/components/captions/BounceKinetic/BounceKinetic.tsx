@@ -8,10 +8,11 @@ import {
   useVideoConfig,
 } from "remotion";
 import type { SpringConfig } from "remotion";
-import type { CaptionToken } from "../shared/types";
+import type { TikTokToken } from "../shared/types";
 import type { BounceKineticProps } from "./types";
 import { FONT_FAMILIES } from "../../../utils/fonts";
 import { msToFrames } from "../../../utils/timing";
+
 
 const BOUNCE_SPRING: SpringConfig = {
   mass: 0.4,
@@ -36,7 +37,7 @@ function buildStrokeShadow(sw: number, color: string): string {
 
 /** Renders a single bouncing word (inside its own Sequence) */
 const BounceWord: React.FC<{
-  token: CaptionToken;
+  token: TikTokToken;
   color: string;
   fontSize: number;
   fontFamily: string;
@@ -46,6 +47,7 @@ const BounceWord: React.FC<{
   enableRotation: boolean;
   rotationRange: number;
   durationFrames: number;
+  exitFadeFrames: number;
 }> = ({
   token,
   color,
@@ -57,6 +59,7 @@ const BounceWord: React.FC<{
   enableRotation,
   rotationRange,
   durationFrames,
+  exitFadeFrames,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -76,10 +79,10 @@ const BounceWord: React.FC<{
       })
     : 0;
 
-  // Smooth exit — fade out over last 3 frames instead of hard cut
+  // Smooth exit — fade out over last N frames instead of hard cut
   const exitOpacity = interpolate(
     frame,
-    [durationFrames - 3, durationFrames],
+    [durationFrames - exitFadeFrames, durationFrames],
     [1, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
@@ -99,7 +102,7 @@ const BounceWord: React.FC<{
           fontWeight: 800,
           fontSize,
           color,
-          textTransform: "uppercase",
+          textTransform: "none",
           letterSpacing: `${letterSpacing}em`,
           textShadow,
           transform: `scale(${scale}) rotate(${rotation}deg)`,
@@ -117,10 +120,10 @@ const BounceWord: React.FC<{
   );
 };
 
-export const BounceKinetic: React.FC<BounceKineticProps> = ({
+export const BounceKinetic: React.FC<BounceKineticProps & { exitFadeFrames?: number }> = ({
   pages,
   colors = ["#FFFFFF", "#FFD700", "#FF4444"],
-  fontSize = 90,
+  fontSize = 78,
   fontFamily = FONT_FAMILIES.poppins,
   strokeColor = "#000000",
   strokeWidth = 4,
@@ -128,11 +131,12 @@ export const BounceKinetic: React.FC<BounceKineticProps> = ({
   enableRotation = true,
   rotationRange = 3,
   letterSpacing = 0.02,
+  exitFadeFrames = 5,
 }) => {
   const { fps } = useVideoConfig();
 
   const allTokens = useMemo(() => {
-    const tokens: CaptionToken[] = [];
+    const tokens: TikTokToken[] = [];
     for (const page of pages) {
       for (const token of page.tokens) {
         tokens.push(token);
@@ -149,12 +153,13 @@ export const BounceKinetic: React.FC<BounceKineticProps> = ({
   return (
     <AbsoluteFill>
       {allTokens.map((token, idx) => {
-        const startFrame = msToFrames(token.start, fps);
-        const durationFrames = msToFrames(token.end - token.start, fps);
+        const startFrame = msToFrames(token.fromMs, fps);
+        const durationFrames = msToFrames(token.toMs - token.fromMs, fps);
         if (durationFrames <= 0) return null;
 
         return (
           <Sequence
+            premountFor={10}
             key={idx}
             from={startFrame}
             durationInFrames={durationFrames}
@@ -171,6 +176,7 @@ export const BounceKinetic: React.FC<BounceKineticProps> = ({
               enableRotation={enableRotation}
               rotationRange={rotationRange}
               durationFrames={durationFrames}
+              exitFadeFrames={exitFadeFrames}
             />
           </Sequence>
         );

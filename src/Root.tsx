@@ -6,9 +6,12 @@ import { KaraokeHighlightDemo } from "./compositions/KaraokeHighlightDemo";
 import { WeightShiftDemo } from "./compositions/WeightShiftDemo";
 import { BounceKineticDemo } from "./compositions/BounceKineticDemo";
 import { TypewriterRevealDemo } from "./compositions/TypewriterRevealDemo";
-import { TexturedHighlightDemo } from "./compositions/TexturedHighlightDemo";
+import { GradientHighlightDemo } from "./compositions/GradientHighlightDemo";
 import { GlitchHighlightDemo } from "./compositions/GlitchHighlightDemo";
-import { BlockFlipDemo } from "./compositions/BlockFlipDemo";
+import { EmojiPopDemo } from "./compositions/EmojiPopDemo";
+import { CRTHighlightDemo } from "./compositions/CRTHighlightDemo";
+import { NegativeFlashDemo } from "./compositions/NegativeFlashDemo";
+import { ShowcaseDemo } from "./compositions/ShowcaseDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -70,8 +73,8 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={380}
         />
         <Composition
-          id="caption-textured-highlight"
-          component={TexturedHighlightDemo}
+          id="caption-gradient-highlight"
+          component={GradientHighlightDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
@@ -86,12 +89,36 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={340}
         />
         <Composition
-          id="caption-block-flip"
-          component={BlockFlipDemo}
+          id="caption-emoji-pop"
+          component={EmojiPopDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
-          durationInFrames={300}
+          durationInFrames={660}
+        />
+        <Composition
+          id="caption-crt-highlight"
+          component={CRTHighlightDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={540}
+        />
+        <Composition
+          id="caption-negative-flash"
+          component={NegativeFlashDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={420}
+        />
+        <Composition
+          id="caption-showcase"
+          component={ShowcaseDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={1380}
         />
       </Folder>
 

@@ -10,6 +10,9 @@ import {
 import type { WeightShiftCaptionProps } from "./types";
 import { FONT_FAMILIES } from "../../../utils/fonts";
 import { msToFrames } from "../../../utils/timing";
+import { getCaptionPositionStyle } from "../../../utils/captionPosition";
+
+const UPCOMING_OPACITY = 0.55;
 
 const WeightShiftWord: React.FC<{
   text: string;
@@ -53,16 +56,16 @@ const WeightShiftWord: React.FC<{
   let boldOpacity: number;
 
   if (isUpcoming) {
-    lightOpacity = 0.55;
+    lightOpacity = UPCOMING_OPACITY;
     boldOpacity = 0;
   } else if (isActive) {
-    lightOpacity = interpolate(easedShift, [0, 1], [0.55, 0]);
+    lightOpacity = interpolate(easedShift, [0, 1], [UPCOMING_OPACITY, 0]);
     boldOpacity = interpolate(easedShift, [0, 1], [0, 1]);
   } else if (hasBeenSpoken) {
     lightOpacity = 0;
     boldOpacity = 1;
   } else {
-    lightOpacity = 0.55;
+    lightOpacity = UPCOMING_OPACITY;
     boldOpacity = 0;
   }
 
@@ -109,7 +112,7 @@ const WeightShiftWord: React.FC<{
 };
 
 const WeightShiftPage: React.FC<{
-  page: { text: string; startMs: number; durationMs: number; tokens: { text: string; start: number; end: number }[] };
+  page: { text: string; startMs: number; durationMs: number; tokens: { text: string; fromMs: number; toMs: number }[] };
   fontSize: number;
   lightWeight: number;
   boldWeight: number;
@@ -121,6 +124,7 @@ const WeightShiftPage: React.FC<{
   lineHeight: number;
   lowercase: boolean;
   enableShadow: boolean;
+  maxWidth: number;
 }> = ({
   page,
   fontSize,
@@ -134,6 +138,7 @@ const WeightShiftPage: React.FC<{
   lineHeight,
   lowercase,
   enableShadow,
+  maxWidth,
 }) => {
   // Inside a Sequence, useCurrentFrame() is relative to Sequence start
   const frame = useCurrentFrame();
@@ -162,7 +167,7 @@ const WeightShiftPage: React.FC<{
         alignItems: "baseline",
         gap: "6px 14px",
         opacity: pageOpacity,
-        maxWidth: 960,
+        maxWidth,
       }}
     >
       {page.tokens.map((token, idx) => {
@@ -171,8 +176,8 @@ const WeightShiftPage: React.FC<{
           <WeightShiftWord
             key={idx}
             text={word}
-            tokenStart={token.start}
-            tokenEnd={token.end}
+            tokenStart={token.fromMs}
+            tokenEnd={token.toMs}
             currentTimeMs={currentTimeMs}
             fontSize={fontSize}
             lightWeight={lightWeight}
@@ -204,14 +209,10 @@ export const WeightShiftCaption: React.FC<WeightShiftCaptionProps> = ({
   lowercase = true,
   enableShadow = true,
 }) => {
-  const { fps } = useVideoConfig();
+  const { fps, width } = useVideoConfig();
+  const maxWidth = width * 0.85;
 
-  const positionStyle: React.CSSProperties =
-    position === "top"
-      ? { justifyContent: "flex-start", paddingTop: 200 }
-      : position === "center"
-        ? { justifyContent: "center" }
-        : { justifyContent: "flex-start", paddingTop: 1248 };
+  const positionStyle: React.CSSProperties = getCaptionPositionStyle(position);
 
   return (
     <AbsoluteFill>
@@ -222,6 +223,7 @@ export const WeightShiftCaption: React.FC<WeightShiftCaptionProps> = ({
 
         return (
           <Sequence
+            premountFor={10}
             key={pageIndex}
             from={startFrame}
             durationInFrames={durationFrames}
@@ -231,7 +233,6 @@ export const WeightShiftCaption: React.FC<WeightShiftCaptionProps> = ({
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "0 60px",
                 ...positionStyle,
               }}
             >
@@ -249,6 +250,7 @@ export const WeightShiftCaption: React.FC<WeightShiftCaptionProps> = ({
                   lineHeight={lineHeight}
                   lowercase={lowercase}
                   enableShadow={enableShadow}
+                  maxWidth={maxWidth}
                 />
               </div>
             </AbsoluteFill>

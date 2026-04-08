@@ -6,11 +6,12 @@ import {
   useVideoConfig,
   interpolate,
 } from "remotion";
-import type { CaptionPage } from "../shared/types";
+import type { TikTokPage } from "../shared/types";
 import type { TypewriterRevealProps, TypewriterColorScheme } from "./types";
 import { TYPEWRITER_SCHEMES } from "./types";
 import { FONT_FAMILIES } from "../../../utils/fonts";
 import { msToFrames } from "../../../utils/timing";
+import { getCaptionPositionStyle } from "../../../utils/captionPosition";
 
 function resolveScheme(
   scheme: TypewriterRevealProps["scheme"],
@@ -29,7 +30,7 @@ function resolveScheme(
 }
 
 function buildCharTimings(
-  page: CaptionPage,
+  page: TikTokPage,
   lowercase: boolean,
 ): { text: string; timings: number[] } {
   const parts: string[] = [];
@@ -41,14 +42,14 @@ function buildCharTimings(
 
     if (ti > 0) {
       parts.push(" ");
-      timings.push(page.tokens[ti - 1].end);
+      timings.push(page.tokens[ti - 1].toMs);
     }
 
     const charCount = word.length;
     for (let ci = 0; ci < charCount; ci++) {
       parts.push(word[ci]);
       timings.push(
-        token.start + (ci / charCount) * (token.end - token.start),
+        token.fromMs + (ci / charCount) * (token.toMs - token.fromMs),
       );
     }
   }
@@ -58,7 +59,7 @@ function buildCharTimings(
 
 /** A single page with character-by-character typewriter reveal */
 const TypewriterPage: React.FC<{
-  page: CaptionPage;
+  page: TikTokPage;
   colors: TypewriterColorScheme;
   fontSize: number;
   fontFamily: string;
@@ -127,9 +128,7 @@ const TypewriterPage: React.FC<{
 
   // Cursor blink
   const blinkCycleFrames = Math.max(2, Math.round((cursorBlinkMs / 1000) * fps));
-  const halfCycle = Math.max(1, Math.floor(blinkCycleFrames / 2));
-  const cursorVisible =
-    showCursor && Math.floor((frame % blinkCycleFrames) / halfCycle) === 0;
+  const cursorVisible = showCursor && (frame % blinkCycleFrames) < blinkCycleFrames / 2;
 
   const charStyle: React.CSSProperties = {
     fontFamily,
@@ -198,12 +197,7 @@ export const TypewriterReveal: React.FC<TypewriterRevealProps> = ({
     [scheme, customColors],
   );
 
-  const positionStyle: React.CSSProperties =
-    position === "top"
-      ? { justifyContent: "flex-start", paddingTop: 200 }
-      : position === "center"
-        ? { justifyContent: "center" }
-        : { justifyContent: "flex-end", paddingBottom: 350 };
+  const positionStyle = getCaptionPositionStyle(position);
 
   return (
     <AbsoluteFill>
@@ -217,13 +211,13 @@ export const TypewriterReveal: React.FC<TypewriterRevealProps> = ({
             key={pageIndex}
             from={startFrame}
             durationInFrames={durationFrames}
+            premountFor={10}
             name={page.tokens.map((t) => t.text).join(" ")}
           >
             <AbsoluteFill
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "0 60px",
                 ...positionStyle,
               }}
             >

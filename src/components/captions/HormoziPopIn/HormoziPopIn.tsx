@@ -8,10 +8,11 @@ import {
   useVideoConfig,
 } from "remotion";
 import type { SpringConfig } from "remotion";
-import type { CaptionToken, CaptionPage } from "../shared/types";
+import type { TikTokToken, TikTokPage } from "../shared/types";
 import type { HormoziPopInProps } from "./types";
 import { FONT_FAMILIES } from "../../../utils/fonts";
 import { msToFrames } from "../../../utils/timing";
+import { getCaptionPositionStyle } from "../../../utils/captionPosition";
 
 const HORMOZI_SPRING: SpringConfig = {
   mass: 0.5,
@@ -48,7 +49,7 @@ function buildStrokeShadow(
 
 /** Single word with spring pop-in animation */
 const HormoziWord: React.FC<{
-  token: CaptionToken;
+  token: TikTokToken;
   globalIndex: number;
   pageStartMs: number;
   wordColor: string;
@@ -82,7 +83,7 @@ const HormoziWord: React.FC<{
   const { fps } = useVideoConfig();
 
   // Token entry relative to this Sequence (which starts at page.startMs)
-  const tokenEntryFrame = msToFrames(token.start - pageStartMs, fps);
+  const tokenEntryFrame = msToFrames(token.fromMs - pageStartMs, fps);
   const stagger = globalIndex * staggerDelayFrames;
   const delayedEntry = tokenEntryFrame + stagger;
 
@@ -120,7 +121,7 @@ const HormoziWord: React.FC<{
         display: "inline-block",
         fontFamily,
         fontSize: wordFontSize,
-        fontWeight: 400,
+        fontWeight: 900,
         color: wordColor,
         textTransform: allCaps ? "uppercase" : "none",
         letterSpacing: `${letterSpacing}em`,
@@ -141,7 +142,7 @@ const HormoziWord: React.FC<{
 
 /** Single page of words, split into lines */
 const HormoziPage: React.FC<{
-  page: CaptionPage;
+  page: TikTokPage;
   highlightMap: Map<string, string>;
   highlightScale: number;
   primaryColor: string;
@@ -154,6 +155,7 @@ const HormoziPage: React.FC<{
   staggerDelayFrames: number;
   translateY: number;
   maxWordsPerLine: number;
+  maxWidth?: number;
 }> = ({
   page,
   highlightMap,
@@ -168,9 +170,10 @@ const HormoziPage: React.FC<{
   staggerDelayFrames,
   translateY,
   maxWordsPerLine,
+  maxWidth,
 }) => {
   // Split tokens into lines
-  const lines: CaptionToken[][] = [];
+  const lines: TikTokToken[][] = [];
   for (let i = 0; i < page.tokens.length; i += maxWordsPerLine) {
     lines.push(page.tokens.slice(i, i + maxWordsPerLine));
   }
@@ -184,7 +187,8 @@ const HormoziPage: React.FC<{
         flexDirection: "column",
         alignItems: "center",
         gap: 8,
-        marginTop: 96,
+        width: "100%",
+        ...(maxWidth != null ? { maxWidth } : {}),
       }}
     >
       {lines.map((lineTokens, lineIdx) => (
@@ -192,10 +196,9 @@ const HormoziPage: React.FC<{
           key={lineIdx}
           style={{
             display: "flex",
-            flexWrap: "nowrap",
+            flexWrap: "wrap",
             justifyContent: "center",
             alignItems: "baseline",
-            // Use consistent spacing via word-gap on each child
             gap: 0,
           }}
         >
@@ -245,7 +248,7 @@ export const HormoziPopIn: React.FC<HormoziPopInProps> = ({
   pages,
   highlightWords = [],
   highlightScale = 1.45,
-  fontFamily = FONT_FAMILIES.anton,
+  fontFamily = FONT_FAMILIES.montserrat,
   fontSize = 68,
   primaryColor = "#FFFFFF",
   strokeColor = "#000000",
@@ -274,12 +277,7 @@ export const HormoziPopIn: React.FC<HormoziPopInProps> = ({
     [strokeWidth, strokeColor, enableSoftShadow],
   );
 
-  const positionStyle: React.CSSProperties =
-    position === "top"
-      ? { justifyContent: "flex-start", paddingTop: 160 }
-      : position === "bottom"
-        ? { justifyContent: "flex-end", paddingBottom: 200 }
-        : { justifyContent: "center" };
+  const positionStyle = getCaptionPositionStyle(position);
 
   return (
     <AbsoluteFill>
@@ -293,12 +291,12 @@ export const HormoziPopIn: React.FC<HormoziPopInProps> = ({
             key={pageIndex}
             from={startFrame}
             durationInFrames={durationFrames}
+            premountFor={10}
           >
             <AbsoluteFill
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "0 60px",
                 ...positionStyle,
               }}
             >
@@ -316,6 +314,7 @@ export const HormoziPopIn: React.FC<HormoziPopInProps> = ({
                 staggerDelayFrames={staggerDelayFrames}
                 translateY={translateY}
                 maxWordsPerLine={maxWordsPerLine}
+                maxWidth={undefined}
               />
             </AbsoluteFill>
           </Sequence>

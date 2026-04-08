@@ -2,16 +2,12 @@ import "./index.css";
 import { Composition, Folder } from "remotion";
 import { Placeholder } from "./compositions/Placeholder";
 import { HormoziPopInDemo } from "./compositions/HormoziPopInDemo";
-import { KaraokeHighlightDemo } from "./compositions/KaraokeHighlightDemo";
-import { WeightShiftDemo } from "./compositions/WeightShiftDemo";
-import { BounceKineticDemo } from "./compositions/BounceKineticDemo";
 import { TypewriterRevealDemo } from "./compositions/TypewriterRevealDemo";
-import { GradientHighlightDemo } from "./compositions/GradientHighlightDemo";
 import { GlitchHighlightDemo } from "./compositions/GlitchHighlightDemo";
 import { EmojiPopDemo } from "./compositions/EmojiPopDemo";
-import { CRTHighlightDemo } from "./compositions/CRTHighlightDemo";
 import { NegativeFlashDemo } from "./compositions/NegativeFlashDemo";
-import { ShowcaseDemo } from "./compositions/ShowcaseDemo";
+import { PaperIIDemo } from "./compositions/PaperIIDemo";
+
 
 // Video config constants
 const WIDTH = 1080;
@@ -41,44 +37,12 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={330}
         />
         <Composition
-          id="caption-karaoke-highlight"
-          component={KaraokeHighlightDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={600}
-        />
-        <Composition
-          id="caption-weight-shift"
-          component={WeightShiftDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={660}
-        />
-        <Composition
-          id="caption-bounce-kinetic"
-          component={BounceKineticDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={280}
-        />
-        <Composition
           id="caption-typewriter-reveal"
           component={TypewriterRevealDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
           durationInFrames={380}
-        />
-        <Composition
-          id="caption-gradient-highlight"
-          component={GradientHighlightDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
         />
         <Composition
           id="caption-glitch-highlight"
@@ -97,14 +61,6 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={660}
         />
         <Composition
-          id="caption-crt-highlight"
-          component={CRTHighlightDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={540}
-        />
-        <Composition
           id="caption-negative-flash"
           component={NegativeFlashDemo}
           width={WIDTH}
@@ -113,15 +69,14 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={420}
         />
         <Composition
-          id="caption-showcase"
-          component={ShowcaseDemo}
+          id="caption-paper-ii"
+          component={PaperIIDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
-          durationInFrames={1380}
+          durationInFrames={330}
         />
       </Folder>
-
       <Folder name="Zoom-Effects">
         <Composition
           id="zoom-placeholder"
@@ -133,7 +88,6 @@ export const RemotionRoot: React.FC = () => {
           defaultProps={{ label: "Zoom effects go here" }}
         />
       </Folder>
-
       <Folder name="Transitions">
         <Composition
           id="transition-placeholder"
@@ -145,7 +99,6 @@ export const RemotionRoot: React.FC = () => {
           defaultProps={{ label: "Transitions go here" }}
         />
       </Folder>
-
       <Folder name="Motion-Graphics">
         <Composition
           id="mg-placeholder"
@@ -157,7 +110,6 @@ export const RemotionRoot: React.FC = () => {
           defaultProps={{ label: "Motion graphics go here" }}
         />
       </Folder>
-
       <Folder name="Color-Effects">
         <Composition
           id="color-placeholder"
@@ -169,7 +121,6 @@ export const RemotionRoot: React.FC = () => {
           defaultProps={{ label: "Color effects go here" }}
         />
       </Folder>
-
       <Folder name="Pro-Elements">
         <Composition
           id="pro-placeholder"

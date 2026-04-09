@@ -22,3 +22,6 @@ export type { PaperIIProps, PaperIIHighlightWord, TornPaperEntry } from "./Paper
 
 export { Clarity } from "./Clarity";
 export type { ClarityProps } from "./Clarity";
+
+export { Recess } from "./Recess";
+export type { RecessProps } from "./Recess";

@@ -8,6 +8,7 @@ import { EmojiPopDemo } from "./compositions/EmojiPopDemo";
 import { NegativeFlashDemo } from "./compositions/NegativeFlashDemo";
 import { PaperIIDemo } from "./compositions/PaperIIDemo";
 import { ClarityDemo } from "./compositions/ClarityDemo";
+import { RecessDemo } from "./compositions/RecessDemo";
 
 
 // Video config constants
@@ -84,6 +85,14 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={360}
+        />
+        <Composition
+          id="caption-recess"
+          component={RecessDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
         />
       </Folder>
       <Folder name="Zoom-Effects">

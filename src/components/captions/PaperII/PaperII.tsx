@@ -2,7 +2,6 @@ import React from "react";
 import {
   AbsoluteFill,
   Sequence,
-  spring,
   interpolate,
   interpolateColors,
   useCurrentFrame,

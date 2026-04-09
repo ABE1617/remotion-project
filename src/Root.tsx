@@ -7,6 +7,7 @@ import { GlitchHighlightDemo } from "./compositions/GlitchHighlightDemo";
 import { EmojiPopDemo } from "./compositions/EmojiPopDemo";
 import { NegativeFlashDemo } from "./compositions/NegativeFlashDemo";
 import { PaperIIDemo } from "./compositions/PaperIIDemo";
+import { ClarityDemo } from "./compositions/ClarityDemo";
 
 
 // Video config constants
@@ -75,6 +76,14 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={330}
+        />
+        <Composition
+          id="caption-clarity"
+          component={ClarityDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={360}
         />
       </Folder>
       <Folder name="Zoom-Effects">

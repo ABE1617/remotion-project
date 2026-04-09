@@ -19,3 +19,6 @@ export { NEGATIVE_FLASH_PRESETS } from "./NegativeFlash";
 
 export { PaperII } from "./PaperII";
 export type { PaperIIProps, PaperIIHighlightWord } from "./PaperII";
+
+export { Clarity } from "./Clarity";
+export type { ClarityProps } from "./Clarity";

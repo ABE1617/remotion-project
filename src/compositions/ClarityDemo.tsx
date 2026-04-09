@@ -1,9 +1,61 @@
 import React from "react";
-import { AbsoluteFill, staticFile } from "remotion";
+import { AbsoluteFill, staticFile, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { Video } from "@remotion/media";
 import { Clarity } from "../components/captions/Clarity";
 import type { TikTokPage } from "../types/captions";
 import type { StickyNotesGroup, ToggleEntry } from "../components/captions/Clarity";
+
+// Zoom events: spring-driven zoom in then out
+interface ZoomEvent {
+  startMs: number;
+  holdMs: number;
+  scale: number;
+}
+
+const ZOOM_EVENTS: ZoomEvent[] = [
+  { startMs: 2800, holdMs: 2500, scale: 1.2 },    // "kids" — hold through "it changes"
+  { startMs: 9500, holdMs: 1500, scale: 1.25 },   // "performing" — hold to end
+];
+
+const ZoomWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  let scale = 1;
+
+  for (const event of ZOOM_EVENTS) {
+    const startFrame = Math.round((event.startMs / 1000) * fps);
+    const holdFrames = Math.round((event.holdMs / 1000) * fps);
+    const zoomAmount = event.scale - 1;
+
+    const zoomIn = spring({
+      frame: frame - startFrame,
+      fps,
+      config: { damping: 200 },
+      durationInFrames: Math.round(fps * 0.5),
+    });
+
+    const zoomOut = spring({
+      frame: frame - startFrame - holdFrames,
+      fps,
+      config: { damping: 200 },
+      durationInFrames: Math.round(fps * 0.6),
+    });
+
+    scale += zoomAmount * (zoomIn - zoomOut);
+  }
+
+  return (
+    <AbsoluteFill
+      style={{
+        transform: `scale(${scale})`,
+        transformOrigin: "center center",
+      }}
+    >
+      {children}
+    </AbsoluteFill>
+  );
+};
 
 const BOTTOM_PAGES: TikTokPage[] = [
   {
@@ -114,10 +166,12 @@ const TOGGLES: ToggleEntry[] = [
 export const ClarityDemo: React.FC = () => {
   return (
     <AbsoluteFill>
-      <Video
-        src={staticFile("sample-video.mp4")}
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
-      />
+      <ZoomWrapper>
+        <Video
+          src={staticFile("sample-video.mp4")}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </ZoomWrapper>
       <Clarity
         pages={BOTTOM_PAGES}
         position="bottom"

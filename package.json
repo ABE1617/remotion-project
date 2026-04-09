@@ -9,6 +9,7 @@
     "@remotion/animation-utils": "4.0.445",
     "@remotion/captions": "^4.0.445",
     "@remotion/cli": "4.0.445",
+    "@remotion/fonts": "^4.0.445",
     "@remotion/google-fonts": "4.0.445",
     "@remotion/lottie": "^4.0.445",
     "@remotion/media": "^4.0.445",

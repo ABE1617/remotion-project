@@ -9,6 +9,7 @@ import { NegativeFlashDemo } from "./compositions/NegativeFlashDemo";
 import { PaperIIDemo } from "./compositions/PaperIIDemo";
 import { ClarityDemo } from "./compositions/ClarityDemo";
 import { RecessDemo } from "./compositions/RecessDemo";
+import { PrimeDemo } from "./compositions/PrimeDemo";
 
 
 // Video config constants
@@ -93,6 +94,14 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={180}
+        />
+        <Composition
+          id="caption-prime"
+          component={PrimeDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={210}
         />
       </Folder>
       <Folder name="Zoom-Effects">

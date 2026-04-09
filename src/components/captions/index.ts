@@ -25,3 +25,6 @@ export type { ClarityProps } from "./Clarity";
 
 export { Recess } from "./Recess";
 export type { RecessProps } from "./Recess";
+
+export { Prime } from "./Prime";
+export type { PrimeProps } from "./Prime";

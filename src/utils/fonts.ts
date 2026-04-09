@@ -1,3 +1,5 @@
+import { loadFont as loadLocalFont } from "@remotion/fonts";
+import { staticFile } from "remotion";
 import { loadFont as loadMontserrat } from "@remotion/google-fonts/Montserrat";
 import { loadFont as loadInter } from "@remotion/google-fonts/Inter";
 import { loadFont as loadPoppins } from "@remotion/google-fonts/Poppins";
@@ -7,6 +9,12 @@ import { loadFont as loadAnton } from "@remotion/google-fonts/Anton";
 import { loadFont as loadSpaceMono } from "@remotion/google-fonts/SpaceMono";
 import { loadFont as loadPermanentMarker } from "@remotion/google-fonts/PermanentMarker";
 import { loadFont as loadCaveatBrush } from "@remotion/google-fonts/CaveatBrush";
+import { loadFont as loadDMSerifDisplay } from "@remotion/google-fonts/DMSerifDisplay";
+import { loadFont as loadPlayfairDisplay } from "@remotion/google-fonts/PlayfairDisplay";
+import { loadFont as loadLora } from "@remotion/google-fonts/Lora";
+import { loadFont as loadCormorantGaramond } from "@remotion/google-fonts/CormorantGaramond";
+import { loadFont as loadSacramento } from "@remotion/google-fonts/Sacramento";
+import { loadFont as loadMrDafoe } from "@remotion/google-fonts/MrDafoe";
 
 // Load all caption fonts at module scope so they're available immediately
 const montserrat = loadMontserrat();
@@ -18,6 +26,22 @@ const anton = loadAnton();
 const spaceMono = loadSpaceMono();
 const permanentMarker = loadPermanentMarker();
 const caveatBrush = loadCaveatBrush();
+const dmSerifDisplay = loadDMSerifDisplay();
+const playfairDisplay = loadPlayfairDisplay();
+const lora = loadLora();
+const cormorantGaramond = loadCormorantGaramond();
+const sacramento = loadSacramento();
+const mrDafoe = loadMrDafoe();
+
+loadLocalFont({
+  family: "Hey August",
+  url: staticFile("HeyAugust.ttf"),
+});
+
+loadLocalFont({
+  family: "Feeling Passionate",
+  url: staticFile("FeelingPassionate.ttf"),
+});
 
 export const FONT_FAMILIES = {
   montserrat: montserrat.fontFamily,
@@ -29,6 +53,14 @@ export const FONT_FAMILIES = {
   spaceMono: spaceMono.fontFamily,
   permanentMarker: permanentMarker.fontFamily,
   caveatBrush: caveatBrush.fontFamily,
+  dmSerifDisplay: dmSerifDisplay.fontFamily,
+  playfairDisplay: playfairDisplay.fontFamily,
+  lora: lora.fontFamily,
+  cormorantGaramond: cormorantGaramond.fontFamily,
+  sacramento: sacramento.fontFamily,
+  mrDafoe: mrDafoe.fontFamily,
+  heyAugust: "Hey August",
+  feelingPassionate: "Feeling Passionate",
 } as const;
 
 export type FontName = keyof typeof FONT_FAMILIES;

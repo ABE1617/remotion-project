@@ -2,13 +2,13 @@ import React from "react";
 import {
   AbsoluteFill,
   Sequence,
-  Video,
   staticFile,
   useCurrentFrame,
   useVideoConfig,
   interpolate,
   spring,
 } from "remotion";
+import { Video } from "@remotion/media";
 import { HormoziPopIn } from "../components/captions/HormoziPopIn";
 import type { HormoziHighlightWord } from "../components/captions/HormoziPopIn";
 import { GlitchHighlight } from "../components/captions/GlitchHighlight";

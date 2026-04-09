@@ -1,5 +1,6 @@
 import React from "react";
-import { AbsoluteFill, Video, staticFile } from "remotion";
+import { AbsoluteFill, staticFile } from "remotion";
+import { Video } from "@remotion/media";
 import { Clarity } from "../components/captions/Clarity";
 import type { TikTokPage } from "../types/captions";
 import type { StickyNotesGroup, ToggleEntry } from "../components/captions/Clarity";
@@ -63,9 +64,6 @@ const BOTTOM_PAGES: TikTokPage[] = [
       { text: "up", fromMs: 6350, toMs: 6800 },
     ],
   },
-];
-
-const TOP_PAGES: TikTokPage[] = [
   {
     text: "The real work starts,",
     startMs: 7100,
@@ -126,7 +124,6 @@ export const ClarityDemo: React.FC = () => {
         stickyNotes={STICKY_NOTES}
         toggles={TOGGLES}
       />
-      <Clarity pages={TOP_PAGES} position="top" />
     </AbsoluteFill>
   );
 };

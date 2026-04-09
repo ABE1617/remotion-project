@@ -7,7 +7,7 @@ import {
   useCurrentFrame,
   useVideoConfig,
 } from "remotion";
-import type { SpringConfig } from "remotion";
+
 import type { TikTokToken, TikTokPage } from "../shared/types";
 import type { GlitchHighlightProps, GlitchColorPreset } from "./types";
 import { GLITCH_PRESETS } from "./types";
@@ -32,14 +32,16 @@ function buildOutlineShadow(sw: number, color: string): string {
   ].join(", ");
 }
 
-const SLIDE_SPRING: SpringConfig = {
-  mass: 0.5,
-  damping: 14,
-  stiffness: 180,
-  overshootClamping: false,
-};
 
-/** Normal word -- same slide-in as GradientHighlight */
+/**
+ * Deterministic pseudo-random per frame — same seed+frame always gives same value.
+ */
+function jitter(frame: number, seed: number): number {
+  return Math.sin(frame * 127.1 + seed * 311.7) * 0.5 + 0.5;
+}
+
+/* ─── Normal Word ─── */
+
 const NormalWord: React.FC<{
   text: string;
   fontSize: number;
@@ -48,46 +50,39 @@ const NormalWord: React.FC<{
   outlineShadow: string;
   opacity: number;
   xOffset: number;
-}> = ({ text, fontSize, fontFamily, letterSpacing, outlineShadow, opacity, xOffset }) => (
-  <span
-    style={{
-      display: "inline-block",
-      fontFamily,
-      fontSize,
-      fontWeight: 900,
-      color: "rgba(255,255,255,0.9)",
-      textTransform: "none",
-      letterSpacing: `${letterSpacing}em`,
-      textShadow: "0 4px 8px rgba(0,0,0,0.5)",
-      transform: `translateX(${xOffset}px)`,
-      transformOrigin: "center center",
-      opacity,
-      whiteSpace: "nowrap",
-      lineHeight: 1.2,
-    }}
-  >
-    {text}
-  </span>
-);
+  yOffset?: number;
+  scale?: number;
+  isActive: boolean;
+  isPast: boolean;
+}> = ({ text, fontSize, fontFamily, letterSpacing, outlineShadow, opacity, xOffset, yOffset = 0, scale = 1, isActive, isPast }) => {
+  const activeScale = isActive ? 1.08 : isPast ? 0.97 : 1;
+  const activeColor = isActive ? "#FFFFFF" : "rgba(255,255,255,0.7)";
 
-/**
- * Deterministic pseudo-random per frame -- same seed+frame always gives same value.
- * Changes every frame for chaotic jitter, but renders consistently.
- */
-function jitter(frame: number, seed: number): number {
-  return Math.sin(frame * 127.1 + seed * 311.7) * 0.5 + 0.5; // 0-1
-}
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        fontFamily,
+        fontSize,
+        fontWeight: 900,
+        color: activeColor,
+        textTransform: "none",
+        letterSpacing: `${letterSpacing}em`,
+        textShadow: outlineShadow + ", 0 4px 8px rgba(0,0,0,0.5)",
+        transform: `translateY(${yOffset}px) scale(${scale * activeScale})`,
+        transformOrigin: "center bottom",
+        opacity,
+        whiteSpace: "nowrap",
+        lineHeight: 1.2,
+      }}
+    >
+      {text}
+    </span>
+  );
+};
 
-/**
- * Glitch word -- chaotic digital corruption:
- * - Per-frame random RGB split (not smooth)
- * - 6 slices with random per-frame displacement
- * - Random skew/scale warp per frame
- * - Hard flicker cuts (not smooth fades)
- * - White flash on first 2 frames
- * - Secondary glitch burst
- * - Scanline overlay
- */
+/* ─── Glitch Word ─── */
+
 const GlitchWord: React.FC<{
   text: string;
   fontSize: number;
@@ -97,48 +92,46 @@ const GlitchWord: React.FC<{
   opacity: number;
   xOffset: number;
 }> = ({ text, fontSize, color, glitchProgress, localFrame, opacity, xOffset }) => {
-  const glitchFontSize = Math.round(fontSize * 1.8);
+  const glitchFontSize = Math.round(fontSize * 2.2);
 
-  // Glitch intensity: alternates between glitch and clean moments
-  // Pattern: GLITCH -> clean -> GLITCH -> clean -> small glitch -> settle
+  // Glitch intensity: bursts with clean windows between
   const intensity = (() => {
     if (glitchProgress < 0.15) {
-      // Initial hard glitch
       return interpolate(glitchProgress, [0, 0.15], [1, 0.9], {
         extrapolateLeft: "clamp", extrapolateRight: "clamp",
       });
     }
     if (glitchProgress < 0.25) {
-      // Brief clean window (word shows normal)
       return interpolate(glitchProgress, [0.15, 0.25], [0.9, 0.05], {
         extrapolateLeft: "clamp", extrapolateRight: "clamp",
       });
     }
     if (glitchProgress < 0.45) {
-      // Second glitch burst
       return interpolate(glitchProgress, [0.25, 0.32, 0.45], [0.05, 0.85, 0.1], {
         extrapolateLeft: "clamp", extrapolateRight: "clamp",
       });
     }
     if (glitchProgress < 0.55) {
-      // Another clean window
       return interpolate(glitchProgress, [0.45, 0.55], [0.1, 0.02], {
         extrapolateLeft: "clamp", extrapolateRight: "clamp",
       });
     }
     if (glitchProgress < 0.72) {
-      // Third smaller burst
       return interpolate(glitchProgress, [0.55, 0.62, 0.72], [0.02, 0.6, 0.05], {
         extrapolateLeft: "clamp", extrapolateRight: "clamp",
       });
     }
-    // Final settle
+    // Final settle — residual micro-jitter
     return interpolate(glitchProgress, [0.72, 1], [0.05, 0], {
       extrapolateLeft: "clamp", extrapolateRight: "clamp",
     });
   })();
 
-  // Per-frame random values (deterministic via frame number)
+  // Residual micro-jitter after main glitch settles
+  const residualJitter = glitchProgress > 0.72
+    ? interpolate(glitchProgress, [0.72, 1], [0.08, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" })
+    : 0;
+
   const r1 = jitter(localFrame, 1);
   const r2 = jitter(localFrame, 2);
   const r3 = jitter(localFrame, 3);
@@ -146,34 +139,46 @@ const GlitchWord: React.FC<{
   const r5 = jitter(localFrame, 5);
   const r6 = jitter(localFrame, 6);
 
-  // RGB split: random direction + magnitude each frame
-  const rgbX = intensity * (r1 - 0.5) * 30;
-  const rgbY = intensity * (r2 - 0.5) * 10;
+  // RGB split
+  const rgbX = intensity * (r1 - 0.5) * 35;
+  const rgbY = intensity * (r2 - 0.5) * 12;
 
-  // Random skew per frame
-  const skew = intensity * (r3 - 0.5) * 20;
+  // Skew + scaleX warp
+  const skew = intensity * (r3 - 0.5) * 24;
+  const scaleX = 1 + intensity * (r4 - 0.5) * 0.18;
 
-  // Random scaleX warp
-  const scaleX = 1 + intensity * (r4 - 0.5) * 0.15;
+  // Micro-jitter after settle
+  const microX = residualJitter * (r1 - 0.5) * 4;
+  const microY = residualJitter * (r2 - 0.5) * 2;
 
-  // Hard flicker: random cuts, not smooth
+  // Hard flicker
   const flickerRoll = jitter(localFrame, 7);
   const flicker = intensity > 0.05
-    ? (flickerRoll > 0.7 ? 0.4 : flickerRoll > 0.3 ? 1 : 0.75)
+    ? (flickerRoll > 0.7 ? 0.35 : flickerRoll > 0.3 ? 1 : 0.7)
     : 1;
 
   // White flash on first 2 frames
   const isWhiteFlash = localFrame >= 0 && localFrame <= 1;
   const mainColor = isWhiteFlash ? "#FFFFFF" : color;
 
-  // Ghost opacity scales with intensity
-  const ghostOpacity = intensity * 0.75;
+  const ghostOpacity = intensity * 0.8;
+
+  // Neon glow bloom — pulses with intensity
+  const glowSize = interpolate(intensity, [0, 0.5, 1], [8, 25, 40], {
+    extrapolateLeft: "clamp", extrapolateRight: "clamp",
+  });
+  const glowOpacity = interpolate(intensity, [0, 0.3, 1], [0.3, 0.6, 0.9], {
+    extrapolateLeft: "clamp", extrapolateRight: "clamp",
+  });
+
+  const neonGlow = `0 0 ${glowSize * 0.5}px ${color}, 0 0 ${glowSize}px ${color}, 0 0 ${glowSize * 2}px ${color}40`;
+  const settledGlow = `0 0 8px ${color}80, 0 0 20px ${color}30`;
 
   const sharedFont: React.CSSProperties = {
     fontFamily: FONT_FAMILIES.bebasNeue,
     fontSize: glitchFontSize,
     fontWeight: 400,
-    textTransform: "none",
+    textTransform: "uppercase",
     letterSpacing: "0.06em",
     whiteSpace: "nowrap",
     lineHeight: 1.1,
@@ -183,14 +188,14 @@ const GlitchWord: React.FC<{
     width: "100%",
   };
 
-  // 3 slices with per-frame random displacement
-  const sliceSeeds = [r1, r2, r3];
-  const sliceCount = 3;
+  // 4 slices for more chaotic displacement
+  const sliceCount = 4;
+  const sliceSeeds = [r1, r2, r3, r4];
   const slices = Array.from({ length: sliceCount }, (_, i) => {
     const sliceHeight = 100 / sliceCount;
     const top = i * sliceHeight;
     const bottom = 100 - (i + 1) * sliceHeight;
-    const shift = intensity * (sliceSeeds[i] - 0.5) * 40;
+    const shift = intensity * (sliceSeeds[i] - 0.5) * 50;
     return { top, bottom: Math.max(bottom, 0), shift };
   });
 
@@ -200,7 +205,7 @@ const GlitchWord: React.FC<{
         display: "inline-block",
         position: "relative",
         opacity: opacity * flicker,
-        transform: `translateX(${xOffset}px) scaleX(${scaleX}) skewX(${skew}deg)`,
+        transform: `translateX(${xOffset + microX}px) translateY(${microY}px) scaleX(${scaleX}) skewX(${skew}deg)`,
         transformOrigin: "center center",
       }}
     >
@@ -210,7 +215,7 @@ const GlitchWord: React.FC<{
           fontFamily: FONT_FAMILIES.bebasNeue,
           fontSize: glitchFontSize,
           fontWeight: 400,
-          textTransform: "none",
+          textTransform: "uppercase",
           letterSpacing: "0.06em",
           visibility: "hidden",
           whiteSpace: "nowrap",
@@ -220,7 +225,19 @@ const GlitchWord: React.FC<{
         {text}
       </span>
 
-      {/* RGB ghost layers — only render when intensity is noticeable */}
+      {/* Color bleed — larger, softer glow that leaks outside text */}
+      <span
+        style={{
+          ...sharedFont,
+          color: "transparent",
+          textShadow: intensity > 0.05 ? neonGlow : settledGlow,
+          opacity: glowOpacity,
+        }}
+      >
+        {text}
+      </span>
+
+      {/* RGB ghost layers */}
       {intensity > 0.1 && (
         <>
           <span
@@ -254,7 +271,7 @@ const GlitchWord: React.FC<{
           style={{
             ...sharedFont,
             color: "#00FF55",
-            opacity: ghostOpacity * 0.35,
+            opacity: ghostOpacity * 0.4,
             transform: `translate(${rgbX * 0.4}px, ${-rgbY * 0.6}px)`,
             mixBlendMode: "screen",
           }}
@@ -263,7 +280,7 @@ const GlitchWord: React.FC<{
         </span>
       )}
 
-      {/* Main text: sliced during glitch, single clean layer when settled */}
+      {/* Main text: sliced during glitch, clean when settled */}
       {intensity > 0.05 ? (
         slices.map((slice, i) => (
           <span
@@ -271,7 +288,7 @@ const GlitchWord: React.FC<{
             style={{
               ...sharedFont,
               color: mainColor,
-              textShadow: "0 4px 10px rgba(0,0,0,0.6)",
+              textShadow: `0 4px 10px rgba(0,0,0,0.6), ${neonGlow}`,
               transform: `translateX(${slice.shift}px)`,
               clipPath: `inset(${slice.top}% 0% ${slice.bottom}% 0%)`,
             }}
@@ -284,14 +301,14 @@ const GlitchWord: React.FC<{
           style={{
             ...sharedFont,
             color,
-            textShadow: "0 4px 10px rgba(0,0,0,0.6)",
+            textShadow: `0 4px 10px rgba(0,0,0,0.6), ${settledGlow}`,
           }}
         >
           {text}
         </span>
       )}
 
-      {/* Scanline overlay during glitch */}
+      {/* Scanline overlay — thicker, more visible */}
       {intensity > 0.05 && (
         <span
           style={{
@@ -303,9 +320,9 @@ const GlitchWord: React.FC<{
             background: `repeating-linear-gradient(
               0deg,
               transparent 0px,
-              transparent 3px,
-              rgba(0,0,0,${intensity * 0.3}) 3px,
-              rgba(0,0,0,${intensity * 0.3}) 4px
+              transparent 2px,
+              rgba(0,0,0,${intensity * 0.45}) 2px,
+              rgba(0,0,0,${intensity * 0.45}) 4px
             )`,
             pointerEvents: "none",
           }}
@@ -315,11 +332,13 @@ const GlitchWord: React.FC<{
   );
 };
 
-/** Animated word wrapper */
+/* ─── Animated Word Wrapper ─── */
+
 const AnimatedWord: React.FC<{
   token: TikTokToken;
   globalIndex: number;
   pageStartMs: number;
+  currentTimeMs: number;
   isGlitch: boolean;
   color: string;
   fontFamily: string;
@@ -332,6 +351,7 @@ const AnimatedWord: React.FC<{
   token,
   globalIndex,
   pageStartMs,
+  currentTimeMs,
   isGlitch,
   color,
   fontFamily,
@@ -348,20 +368,22 @@ const AnimatedWord: React.FC<{
   const delayedEntry = tokenEntryFrame + globalIndex * staggerDelayFrames;
   const localFrame = frame - delayedEntry;
 
-  // Slide-in for both types
-  const slideSpring = spring({ fps, frame: localFrame, config: SLIDE_SPRING });
-  const direction = globalIndex % 2 === 0 ? -1 : 1;
-  const xOffset = interpolate(slideSpring, [0, 1], [35 * direction, 0], {
+  const popSpring = spring({ fps, frame: localFrame, config: { mass: 0.4, damping: 12, stiffness: 220 } });
+
+  const scale = interpolate(popSpring, [0, 1], [0.6, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const opacity = interpolate(slideSpring, [0, 0.25], [0, 1], {
+  const yOffset = interpolate(popSpring, [0, 0.5, 1], [12, -3, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const opacity = interpolate(popSpring, [0, 0.2], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   if (isGlitch) {
-    // Glitch progress: 0 (full glitch) -> 1 (settled) over glitchDurationFrames
     const glitchProgress = interpolate(
       localFrame,
       [0, glitchDurationFrames],
@@ -377,10 +399,13 @@ const AnimatedWord: React.FC<{
         glitchProgress={glitchProgress}
         localFrame={localFrame}
         opacity={opacity}
-        xOffset={xOffset}
+        xOffset={0}
       />
     );
   }
+
+  const isActive = currentTimeMs >= token.fromMs && currentTimeMs < token.toMs;
+  const isPast = currentTimeMs >= token.toMs;
 
   return (
     <NormalWord
@@ -390,12 +415,17 @@ const AnimatedWord: React.FC<{
       letterSpacing={letterSpacing}
       outlineShadow={outlineShadow}
       opacity={opacity}
-      xOffset={xOffset}
+      xOffset={0}
+      yOffset={yOffset}
+      scale={scale}
+      isActive={isActive}
+      isPast={isPast}
     />
   );
 };
 
-/** Page layout -- normal words inline, glitch words on own line */
+/* ─── Page Layout ─── */
+
 const GlitchPage: React.FC<{
   page: TikTokPage;
   highlightMap: Map<string, GlitchColorPreset>;
@@ -415,6 +445,28 @@ const GlitchPage: React.FC<{
   staggerDelayFrames,
   glitchDurationFrames,
 }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const currentTimeMs = page.startMs + (frame / fps) * 1000;
+
+  // Screen shake — jolt the whole page when a glitch word is currently active
+  const activeGlitchToken = page.tokens.find((t) => {
+    const norm = normalizeWord(t.text);
+    if (!highlightMap.has(norm)) return false;
+    return currentTimeMs >= t.fromMs && currentTimeMs < t.fromMs + (glitchDurationFrames / fps) * 1000 * 0.5;
+  });
+
+  let shakeX = 0;
+  let shakeY = 0;
+  if (activeGlitchToken) {
+    const glitchLocalMs = currentTimeMs - activeGlitchToken.fromMs;
+    const shakeFade = interpolate(glitchLocalMs, [0, 300], [1, 0], {
+      extrapolateLeft: "clamp", extrapolateRight: "clamp",
+    });
+    shakeX = jitter(frame, 20) * 8 * shakeFade - 4 * shakeFade;
+    shakeY = jitter(frame, 21) * 6 * shakeFade - 3 * shakeFade;
+  }
+
   const groups: { tokens: TikTokToken[]; isGlitch: boolean; color: string }[] = [];
   let currentNormal: TikTokToken[] = [];
 
@@ -437,7 +489,15 @@ const GlitchPage: React.FC<{
   let globalIndex = 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, maxWidth: "100%", overflow: "hidden" }}>
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 6,
+      maxWidth: "100%",
+      overflow: "hidden",
+      transform: `translate(${shakeX}px, ${shakeY}px)`,
+    }}>
       {groups.map((group, groupIdx) => {
         if (group.isGlitch) {
           const token = group.tokens[0];
@@ -449,6 +509,7 @@ const GlitchPage: React.FC<{
                 token={token}
                 globalIndex={idx}
                 pageStartMs={page.startMs}
+                currentTimeMs={currentTimeMs}
                 isGlitch={true}
                 color={group.color}
                 fontFamily={fontFamily}
@@ -476,6 +537,7 @@ const GlitchPage: React.FC<{
                     token={token}
                     globalIndex={idx}
                     pageStartMs={page.startMs}
+                    currentTimeMs={currentTimeMs}
                     isGlitch={false}
                     color="#FFFFFF"
                     fontFamily={fontFamily}
@@ -494,6 +556,8 @@ const GlitchPage: React.FC<{
     </div>
   );
 };
+
+/* ─── Main Component ─── */
 
 export const GlitchHighlight: React.FC<GlitchHighlightProps> = ({
   pages,

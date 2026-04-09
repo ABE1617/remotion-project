@@ -1,5 +1,6 @@
 import React from "react";
-import { AbsoluteFill, Video, staticFile } from "remotion";
+import { AbsoluteFill, staticFile } from "remotion";
+import { Video } from "@remotion/media";
 import { GlitchHighlight } from "../components/captions/GlitchHighlight";
 import type { GlitchHighlightWord } from "../components/captions/GlitchHighlight";
 import type { TikTokPage } from "../types/captions";

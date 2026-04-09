@@ -1,5 +1,6 @@
 import React from "react";
-import { AbsoluteFill, Video, staticFile } from "remotion";
+import { AbsoluteFill, staticFile } from "remotion";
+import { Video } from "@remotion/media";
 import { EmojiPop } from "../components/captions/EmojiPop";
 import type { TikTokPage } from "../types/captions";
 

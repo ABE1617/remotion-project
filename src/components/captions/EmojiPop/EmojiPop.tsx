@@ -99,8 +99,6 @@ const EmojiWord: React.FC<{
         letterSpacing: "0.04em",
         lineHeight: 1.2,
         color,
-        WebkitTextStroke: "4px #000000",
-        paintOrder: "stroke fill",
         textShadow: "0 4px 12px rgba(0,0,0,0.55)",
         transform: `scale(${scale}) translateY(${translateY}px)`,
         transformOrigin: "center bottom",

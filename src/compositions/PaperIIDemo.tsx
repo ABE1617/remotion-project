@@ -1,7 +1,63 @@
 import React from "react";
-import { AbsoluteFill, Video, staticFile } from "remotion";
+import { AbsoluteFill, staticFile, spring, useCurrentFrame, useVideoConfig } from "remotion";
+import { Video } from "@remotion/media";
 import { PaperII } from "../components/captions/PaperII";
 import type { TikTokPage } from "../types/captions";
+import type { TornPaperEntry, NewspaperTransitionEntry } from "../components/captions/PaperII";
+
+// Zoom events: each is a spring-driven zoom in then out
+interface ZoomEvent {
+  startMs: number;   // when zoom begins
+  holdMs: number;     // how long to hold at peak
+  scale: number;      // target scale
+}
+
+const ZOOM_EVENTS: ZoomEvent[] = [
+  { startMs: 2500, holdMs: 800, scale: 1.25 },   // "just for kids"
+  { startMs: 9500, holdMs: 700, scale: 1.3 },     // "performing"
+];
+
+const ZoomWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  let scale = 1;
+
+  for (const event of ZOOM_EVENTS) {
+    const startFrame = Math.round((event.startMs / 1000) * fps);
+    const holdFrames = Math.round((event.holdMs / 1000) * fps);
+    const zoomAmount = event.scale - 1;
+
+    // Zoom in spring
+    const zoomIn = spring({
+      frame: frame - startFrame,
+      fps,
+      config: { damping: 200 },
+      durationInFrames: Math.round(fps * 0.5),
+    });
+
+    // Zoom out spring (starts after hold)
+    const zoomOut = spring({
+      frame: frame - startFrame - holdFrames,
+      fps,
+      config: { damping: 200 },
+      durationInFrames: Math.round(fps * 0.6),
+    });
+
+    scale += zoomAmount * (zoomIn - zoomOut);
+  }
+
+  return (
+    <AbsoluteFill
+      style={{
+        transform: `scale(${scale})`,
+        transformOrigin: "center center",
+      }}
+    >
+      {children}
+    </AbsoluteFill>
+  );
+};
 
 const BOTTOM_PAGES: TikTokPage[] = [
   {
@@ -96,14 +152,34 @@ const TOP_PAGES: TikTokPage[] = [
   },
 ];
 
+const TORN_PAPERS: TornPaperEntry[] = [
+  {
+    topText: "DEEP FOCUS",
+    bottomText: "NO DISTRACTIONS",
+    appearAtMs: 200,
+    disappearAtMs: 2000,
+  },
+];
+
+const NEWSPAPER_TRANSITIONS: NewspaperTransitionEntry[] = [
+  { atMs: 6800 },
+];
+
 export const PaperIIDemo: React.FC = () => {
   return (
     <AbsoluteFill>
-      <Video
-        src={staticFile("sample-video.mp4")}
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      <ZoomWrapper>
+        <Video
+          src={staticFile("sample-video.mp4")}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </ZoomWrapper>
+      <PaperII
+        pages={BOTTOM_PAGES}
+        position="bottom"
+        tornPapers={TORN_PAPERS}
+        newspaperTransitions={NEWSPAPER_TRANSITIONS}
       />
-      <PaperII pages={BOTTOM_PAGES} position="bottom" />
       <PaperII pages={TOP_PAGES} position="top" />
     </AbsoluteFill>
   );

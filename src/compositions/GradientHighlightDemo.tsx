@@ -1,5 +1,6 @@
 import React from "react";
-import { AbsoluteFill, Video, staticFile } from "remotion";
+import { AbsoluteFill, staticFile } from "remotion";
+import { Video } from "@remotion/media";
 import { GradientHighlight } from "../components/captions/GradientHighlight";
 import type { GradientHighlightWord } from "../components/captions/GradientHighlight";
 import type { TikTokPage } from "../types/captions";

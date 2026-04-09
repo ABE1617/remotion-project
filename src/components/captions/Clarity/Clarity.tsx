@@ -172,49 +172,99 @@ const ClarityStickyNotesGroup: React.FC<{
         }}
       >
 
-      {/* Sticky notes — rendered back to front */}
+      {/* Sticky notes — paper flutter animations */}
       {group.notes.map((note, i) => {
-        // Stagger: each note pops in 4 frames after the previous
-        const noteDelay = 4 * i;
-        const noteElapsed = elapsed - noteDelay - 5; // 5 frame delay after fog starts
+        const noteDelay = 5 * i;
+        const noteElapsed = elapsed - noteDelay - 2;
 
-        // Exit: reverse stagger (pink first, yellow last), float up + shrink
-        const exitDelay = (2 - i) * 3; // pink=0, blue=3, yellow=6
-        const exitElapsed = frame - disappearFrame + exitDelay;
-        const exitProgress = interpolate(
-          exitElapsed,
-          [0, 8],
-          [0, 1],
-          { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-        );
-        const exitY = interpolate(exitProgress, [0, 1], [0, -50]);
-        const exitScale = interpolate(exitProgress, [0, 1], [1, 0.7]);
-        const exitOpacity = interpolate(exitProgress, [0, 0.8, 1], [1, 0.5, 0]);
+        // Each note has a different sway rhythm
+        const swayFreq = [0.35, 0.28, 0.32][i];
+        const swayDir = i === 1 ? -1 : 1; // center note sways opposite
 
-        // Stick-on: note slaps down from above, sticks to surface
-        const slapSpring = spring({
+        // --- ENTRANCE: flutter down like a dropped piece of paper ---
+        const fallProgress = spring({
           fps,
           frame: noteElapsed,
-          config: { mass: 0.5, damping: 18, stiffness: 250, overshootClamping: false },
+          config: { mass: 0.6, damping: 14, stiffness: 160, overshootClamping: false },
         });
 
-        const yDrop = interpolate(slapSpring, [0, 1], [-60, 0]);
-        const scale = interpolate(slapSpring, [0, 0.3, 1], [0.9, 1.03, 1]);
-        const rotationSettle = interpolate(
-          slapSpring,
-          [0, 0.4, 1],
-          [note.rotation + 6, note.rotation - 2, note.rotation],
-        );
-        const noteOpacity = interpolate(slapSpring, [0, 0.1], [0, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
+        // Y: drops from above — starts high, lands at position
+        const enterY = interpolate(fallProgress, [0, 1], [-350, 0]);
+
+        // X: pendulum sway that dampens as paper settles
+        const swayAmount = interpolate(fallProgress, [0, 0.3, 0.6, 1], [0, 1, 0.5, 0]);
+        const swayX = Math.sin(noteElapsed * swayFreq) * 45 * swayAmount * swayDir;
+
+        // Rotation: rocks back and forth like paper catching air
+        const rockAmount = interpolate(fallProgress, [0, 0.3, 0.7, 1], [0, 1, 0.4, 0]);
+        const rockAngle = Math.sin(noteElapsed * swayFreq + 0.5) * 18 * rockAmount;
+        const enterRotation = note.rotation + rockAngle;
+
+        // 3D tilt: paper tilts on X axis as it catches air currents
+        const tiltAmount = interpolate(fallProgress, [0, 0.4, 0.8, 1], [0, 1, 0.3, 0]);
+        const tiltX = Math.sin(noteElapsed * swayFreq * 1.3) * 25 * tiltAmount;
+        const tiltY = Math.cos(noteElapsed * swayFreq * 0.9) * 15 * tiltAmount;
+
+        // Scale: paper appears slightly larger when higher (perspective)
+        const enterScale = interpolate(fallProgress, [0, 0.5, 1], [1.15, 1.03, 1]);
+
+        // Opacity: fades in quickly
+        const enterOpacity = interpolate(fallProgress, [0, 0.12], [0, 1], {
+          extrapolateLeft: "clamp", extrapolateRight: "clamp",
         });
+
+        // Shadow: far away = big diffuse shadow, close = tight shadow
+        const enterShadowBlur = interpolate(fallProgress, [0, 1], [35, 6]);
+        const enterShadowY = interpolate(fallProgress, [0, 1], [25, 3]);
+        const enterShadowOp = interpolate(fallProgress, [0, 1], [0.06, 0.2]);
+
+        // --- EXIT: wind sweep — caught by a gust, flies away ---
+        const exitDelay = (2 - i) * 3;
+        const exitElapsed = frame - disappearFrame + exitDelay;
+        const isExiting = exitElapsed >= 0;
+
+        const exitProgress = spring({
+          fps,
+          frame: Math.max(0, exitElapsed),
+          config: { mass: 0.4, damping: 16, stiffness: 200, overshootClamping: true },
+        });
+
+        // Wind direction per note: swept in different directions
+        const windAngles = [-35, 10, 40]; // degrees from vertical
+        const windAngle = windAngles[i] * (Math.PI / 180);
+        const windDist = interpolate(exitProgress, [0, 1], [0, 500]);
+        const exitX = Math.sin(windAngle) * windDist;
+        const exitY = -Math.cos(windAngle) * windDist;
+
+        // Spins as it flies away
+        const exitSpin = interpolate(exitProgress, [0, 1], [0, (i === 1 ? -1 : 1) * 45]);
+
+        // Tumble on 3D axes while flying
+        const exitTiltX = interpolate(exitProgress, [0, 1], [0, 30]);
+        const exitTiltY = interpolate(exitProgress, [0, 1], [0, (i === 0 ? -1 : 1) * 25]);
+
+        const exitScale = interpolate(exitProgress, [0, 1], [1, 0.6]);
+        const exitOpacity = interpolate(exitProgress, [0, 0.5, 1], [1, 0.7, 0]);
+
+        // --- COMBINE ---
+        const finalX = isExiting ? exitX : swayX;
+        const finalY = isExiting ? exitY : enterY;
+        const finalRot = isExiting ? note.rotation + exitSpin : enterRotation;
+        const finalTiltX = isExiting ? exitTiltX : tiltX;
+        const finalTiltY = isExiting ? exitTiltY : tiltY;
+        const finalScale = isExiting ? exitScale : enterScale;
+        const finalOpacity = isExiting ? exitOpacity : enterOpacity;
+        const finalShadowBlur = isExiting
+          ? interpolate(exitProgress, [0, 1], [6, 30])
+          : enterShadowBlur;
+        const finalShadowY = isExiting
+          ? interpolate(exitProgress, [0, 1], [3, 20])
+          : enterShadowY;
+        const finalShadowOp = isExiting
+          ? interpolate(exitProgress, [0, 1], [0.2, 0.03])
+          : enterShadowOp;
 
         const [xOff, yOff] = NOTE_POSITIONS[i];
-
-        // Shadow grows as note lands
-        const shadowBlur = interpolate(slapSpring, [0, 1], [20, 8]);
-        const shadowY = interpolate(slapSpring, [0, 1], [12, 3]);
 
         return (
           <div
@@ -227,61 +277,69 @@ const ClarityStickyNotesGroup: React.FC<{
               height: noteSize,
               marginLeft: xOff - noteSize / 2,
               marginTop: yOff - noteSize / 2,
-              backgroundColor: note.color,
-              transform: `translateY(${yDrop + exitY}px) scale(${scale * exitScale}) rotate(${rotationSettle}deg)`,
-              transformOrigin: "center center",
-              opacity: noteOpacity * exitOpacity,
-              boxShadow: `1px ${shadowY}px ${shadowBlur}px rgba(0,0,0,0.15)`,
               zIndex: i,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 10,
+              perspective: 800,
             }}
           >
-            {/* Checkmark on first note */}
-            {i === 0 && (
-              <span
-                style={{
-                  fontSize: noteFontSize * 0.8,
-                  color: "#1A1A1A",
-                  marginBottom: 2,
-                  fontFamily: noteFontFamily,
-                }}
-              >
-                ✓
-              </span>
-            )}
-
-            {/* Keyword */}
-            <span
+            <div
               style={{
-                fontFamily: noteFontFamily,
-                fontSize: noteFontSize,
-                fontWeight: 400,
-                color: "#1A1A1A",
-                textAlign: "center",
-                lineHeight: 1.1,
-                fontStyle: i === 2 ? "italic" : "normal",
+                width: "100%",
+                height: "100%",
+                backgroundColor: note.color,
+                transform: `translate(${finalX}px, ${finalY}px) rotateX(${finalTiltX}deg) rotateY(${finalTiltY}deg) rotate(${finalRot}deg) scale(${finalScale})`,
+                transformOrigin: "center center",
+                opacity: finalOpacity,
+                boxShadow: `2px ${finalShadowY}px ${finalShadowBlur}px rgba(0,0,0,${finalShadowOp})`,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 10,
               }}
             >
-              {note.text}
-            </span>
+              {/* Checkmark on first note */}
+              {i === 0 && (
+                <span
+                  style={{
+                    fontSize: noteFontSize * 0.8,
+                    color: "#1A1A1A",
+                    marginBottom: 2,
+                    fontFamily: noteFontFamily,
+                  }}
+                >
+                  ✓
+                </span>
+              )}
 
-            {/* Underline swoosh on third note */}
-            {i === 2 && (
-              <div
+              {/* Keyword */}
+              <span
                 style={{
-                  width: "60%",
-                  height: 2,
-                  backgroundColor: "#1A1A1A",
-                  marginTop: 4,
-                  borderRadius: 2,
-                  opacity: 0.5,
+                  fontFamily: noteFontFamily,
+                  fontSize: noteFontSize,
+                  fontWeight: 400,
+                  color: "#1A1A1A",
+                  textAlign: "center",
+                  lineHeight: 1.1,
+                  fontStyle: i === 2 ? "italic" : "normal",
                 }}
-              />
-            )}
+              >
+                {note.text}
+              </span>
+
+              {/* Underline swoosh on third note */}
+              {i === 2 && (
+                <div
+                  style={{
+                    width: "60%",
+                    height: 2,
+                    backgroundColor: "#1A1A1A",
+                    marginTop: 4,
+                    borderRadius: 2,
+                    opacity: 0.5,
+                  }}
+                />
+              )}
+            </div>
           </div>
         );
       })}
@@ -342,7 +400,7 @@ const ClarityToggleItem: React.FC<{
   const knobTravel = trackW - knobSize - knobGap * 2;
 
   const knobLeft = interpolate(toggleSpring, [0, 1], [knobGap, knobGap + knobTravel]);
-  const trackColor = interpolateColors(toggleSpring, [0, 1], ["#D1D5DB", "#22C55E"]);
+  const trackColor = interpolateColors(toggleSpring, [0, 1], ["#D1D5DB", "#3B82F6"]);
 
   return (
     <div
@@ -362,7 +420,7 @@ const ClarityToggleItem: React.FC<{
           fontSize,
           fontWeight: 700,
           color: "#FFFFFF",
-          marginRight: 28,
+          marginRight: 100,
           textShadow: "0 2px 10px rgba(0,0,0,0.4)",
           whiteSpace: "nowrap",
         }}
@@ -421,7 +479,7 @@ export const Clarity: React.FC<ClarityProps> = ({
   stickyFontFamily = FONT_FAMILIES.caveatBrush,
   toggles = [],
   toggleScale = 1.5,
-  toggleFontSize = 48,
+  toggleFontSize = 72,
 }) => {
   const { fps } = useVideoConfig();
 

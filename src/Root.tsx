@@ -33,6 +33,7 @@ import { ParticleDissolveDemo } from "./Testing/ParticleDissolve/ParticleDissolv
 import { RunawayDemo } from "./Testing/Runaway/RunawayDemo";
 import { CoveDemo } from "./Testing/Cove/CoveDemo";
 import { QuintessenceDemo } from "./Testing/Quintessence/QuintessenceDemo";
+import { DriftDemo } from "./Testing/Drift/DriftDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -236,6 +237,14 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={270}
+        />
+        <Composition
+          id="caption-drift"
+          component={DriftDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={250}
         />
       </Folder>
       <Folder name="Zoom-Effects">

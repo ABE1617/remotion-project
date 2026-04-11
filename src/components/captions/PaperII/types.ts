@@ -74,6 +74,8 @@ export interface PaperIIProps extends CaptionStyleProps {
   slideDistance?: number;
   /** Duration of color transition per word in ms (default: 60) */
   colorTransitionMs?: number;
+  /** Text shadow for readability (default: heavy shadow) */
+  textShadow?: string;
   /** Torn paper overlay entries (separate from captions) */
   tornPapers?: TornPaperEntry[];
   /** Newspaper transition entries */

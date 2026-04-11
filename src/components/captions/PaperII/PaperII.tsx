@@ -30,6 +30,7 @@ const PaperIIWord: React.FC<{
   fontWeight: number | string;
   letterSpacing: string;
   colorTransitionMs: number;
+  textShadow: string;
 }> = ({
   token,
   pageStartMs,
@@ -41,6 +42,7 @@ const PaperIIWord: React.FC<{
   fontWeight,
   letterSpacing,
   colorTransitionMs,
+  textShadow,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -71,8 +73,9 @@ const PaperIIWord: React.FC<{
         color,
         textTransform: allCaps ? "uppercase" : "none",
         letterSpacing,
-        lineHeight: 1.1,
+        lineHeight: 1.15,
         whiteSpace: "nowrap",
+        textShadow,
       }}
     >
       {token.text}
@@ -99,10 +102,10 @@ const PaperIIStrip: React.FC<{
   stripPaddingX: number;
   stripPaddingY: number;
   borderRadius: number;
+  textShadow: string;
 }> = ({
   tokens,
   pageStartMs,
-  paperColor,
   upcomingColor,
   activeColor,
   allCaps,
@@ -111,9 +114,7 @@ const PaperIIStrip: React.FC<{
   fontWeight,
   letterSpacing,
   colorTransitionMs,
-  stripPaddingX,
-  stripPaddingY,
-  borderRadius,
+  textShadow,
 }) => {
   return (
     <div
@@ -122,10 +123,6 @@ const PaperIIStrip: React.FC<{
         alignItems: "center",
         justifyContent: "center",
         gap: 12,
-        padding: `${stripPaddingY}px ${stripPaddingX}px`,
-        backgroundColor: paperColor,
-        borderRadius,
-        boxShadow: "0 2px 6px rgba(0,0,0,0.10), 0 1px 2px rgba(0,0,0,0.06)",
       }}
     >
       {tokens.map((token, idx) => (
@@ -141,6 +138,7 @@ const PaperIIStrip: React.FC<{
           fontWeight={fontWeight}
           letterSpacing={letterSpacing}
           colorTransitionMs={colorTransitionMs}
+          textShadow={textShadow}
         />
       ))}
     </div>
@@ -168,6 +166,7 @@ const PaperIIPage: React.FC<{
   stripPaddingX: number;
   stripPaddingY: number;
   borderRadius: number;
+  textShadow: string;
 }> = ({
   page,
   maxWordsPerLine,
@@ -506,22 +505,23 @@ const NewspaperTransition: React.FC<{
 
 export const PaperII: React.FC<PaperIIProps> = ({
   pages,
-  paperColor = "#FFFFFF",
-  upcomingColor = "#B0B0B0",
-  activeColor = "#1A1A1A",
-  fontFamily = FONT_FAMILIES.montserrat,
-  fontSize = 64,
-  fontWeight = 900,
+  paperColor = "transparent",
+  upcomingColor = "rgba(255,255,255,0.45)",
+  activeColor = "#FFFFFF",
+  fontFamily = FONT_FAMILIES.lora,
+  fontSize = 68,
+  fontWeight = 700,
   position = "bottom",
   maxWordsPerLine = 4,
   allCaps = false,
-  letterSpacing = "0.03em",
-  stripPaddingX = 44,
-  stripPaddingY = 26,
+  letterSpacing = "-0.01em",
+  stripPaddingX = 0,
+  stripPaddingY = 0,
   stripGap = 10,
-  borderRadius = 28,
+  borderRadius = 0,
   slideDistance = 20,
   colorTransitionMs = 60,
+  textShadow = "0 2px 10px rgba(0,0,0,0.8), 0 0 3px rgba(0,0,0,0.5)",
   tornPapers = [],
   newspaperTransitions = [],
 }) => {
@@ -572,6 +572,7 @@ export const PaperII: React.FC<PaperIIProps> = ({
                 stripPaddingX={stripPaddingX}
                 stripPaddingY={stripPaddingY}
                 borderRadius={borderRadius}
+                textShadow={textShadow}
               />
             </AbsoluteFill>
           </Sequence>

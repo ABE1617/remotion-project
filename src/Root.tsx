@@ -10,7 +10,27 @@ import { PaperIIDemo } from "./compositions/PaperIIDemo";
 import { ClarityDemo } from "./compositions/ClarityDemo";
 import { RecessDemo } from "./compositions/RecessDemo";
 import { PrimeDemo } from "./compositions/PrimeDemo";
-
+import { DynamicAIEmphasisDemo } from "./Testing/DynamicAIEmphasis/DynamicAIEmphasisDemo";
+import { HormoziEvolvedDemo } from "./Testing/HormoziEvolved/HormoziEvolvedDemo";
+import { CinematicLetterpressDemo } from "./Testing/CinematicLetterpress/CinematicLetterpressDemo";
+import { GradientGlassMorphDemo } from "./Testing/GradientGlassMorph/GradientGlassMorphDemo";
+import { ParallaxPop3DDemo } from "./Testing/ParallaxPop3D/ParallaxPop3DDemo";
+import { NeonPulseDemo } from "./Testing/NeonPulse/NeonPulseDemo";
+import { GlitchDecodeDemo } from "./Testing/GlitchDecode/GlitchDecodeDemo";
+import { KineticScatterDemo } from "./Testing/KineticScatter/KineticScatterDemo";
+import { BeatBounceDemo } from "./Testing/BeatBounce/BeatBounceDemo";
+import { LiquidMorphDemo } from "./Testing/LiquidMorph/LiquidMorphDemo";
+import { ElasticStretchDemo } from "./Testing/ElasticStretch/ElasticStretchDemo";
+import { SplitColorKaraokeDemo } from "./Testing/SplitColorKaraoke/SplitColorKaraokeDemo";
+import { BoxedWordStackDemo } from "./Testing/BoxedWordStack/BoxedWordStackDemo";
+import { MagazineCutoutDemo } from "./Testing/MagazineCutout/MagazineCutoutDemo";
+import { SurveillanceHUDDemo } from "./Testing/SurveillanceHUD/SurveillanceHUDDemo";
+import { ChromaticGradientSweepDemo } from "./Testing/ChromaticGradientSweep/ChromaticGradientSweepDemo";
+import { StaggerWaveDemo } from "./Testing/StaggerWave/StaggerWaveDemo";
+import { RetroVHSDemo } from "./Testing/RetroVHS/RetroVHSDemo";
+import { ParticleDissolveDemo } from "./Testing/ParticleDissolve/ParticleDissolveDemo";
+import { RunawayDemo } from "./Testing/Runaway/RunawayDemo";
+import { CoveDemo } from "./Testing/Cove/CoveDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -88,20 +108,116 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={360}
         />
         <Composition
-          id="caption-recess"
-          component={RecessDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={180}
-        />
-        <Composition
           id="caption-prime"
           component={PrimeDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
           durationInFrames={210}
+        />
+        <Composition
+          id="caption-dynamic-ai-emphasis"
+          component={DynamicAIEmphasisDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={270}
+        />
+        <Composition
+          id="caption-cinematic-letterpress"
+          component={CinematicLetterpressDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={310}
+        />
+        <Composition
+          id="caption-gradient-glass-morph"
+          component={GradientGlassMorphDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={270}
+        />
+        <Composition
+          id="caption-parallax-3d"
+          component={ParallaxPop3DDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={210}
+        />
+        <Composition
+          id="caption-neon-pulse"
+          component={NeonPulseDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
+        />
+        <Composition
+          id="caption-glitch-decode"
+          component={GlitchDecodeDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={280}
+        />
+        <Composition
+          id="caption-liquid-morph"
+          component={LiquidMorphDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={280}
+        />
+        <Composition
+          id="caption-boxed-word-stack"
+          component={BoxedWordStackDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={280}
+        />
+        <Composition
+          id="caption-magazine-cutout"
+          component={MagazineCutoutDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={275}
+        />
+        <Composition
+          id="caption-surveillance-hud"
+          component={SurveillanceHUDDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={275}
+        />
+        <Composition
+          id="caption-stagger-wave"
+          component={StaggerWaveDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-runaway"
+          component={RunawayDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-cove"
+          component={CoveDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
         />
       </Folder>
       <Folder name="Zoom-Effects">

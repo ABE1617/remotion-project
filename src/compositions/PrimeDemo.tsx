@@ -181,9 +181,6 @@ export const PrimeDemo: React.FC = () => {
         titleText="progress"
         titleAppearAtMs={100}
         titleDisappearAtMs={1800}
-        echoOverlays={[
-          { text: "GROWTH", appearAtMs: 3500, disappearAtMs: 4600, fontSize: 300, verticalOffset: 250 },
-        ]}
       />
     </AbsoluteFill>
   );

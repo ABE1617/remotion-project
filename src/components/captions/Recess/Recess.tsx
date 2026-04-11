@@ -15,37 +15,31 @@ import { msToFrames } from "../../../utils/timing";
 import { CAPTION_PADDING } from "../../../utils/captionPosition";
 
 // ---------------------------------------------------------------------------
-// RecessWord — single word with pill highlight when active
+// RecessWord — single word, active word gets gold color + bounce
 // ---------------------------------------------------------------------------
 
 const RecessWord: React.FC<{
   token: TikTokToken;
   pageStartMs: number;
   textColor: string;
-  pillColor: string;
-  pillTextColor: string;
-  pillRadius: number;
-  pillPaddingX: number;
-  pillPaddingY: number;
+  highlightColor: string;
   allCaps: boolean;
   fontSize: number;
   fontFamily: string;
   fontWeight: number | string;
   letterSpacing: string;
+  textShadow: string;
 }> = ({
   token,
   pageStartMs,
   textColor,
-  pillColor,
-  pillTextColor,
-  pillRadius,
-  pillPaddingX,
-  pillPaddingY,
+  highlightColor,
   allCaps,
   fontSize,
   fontFamily,
   fontWeight,
   letterSpacing,
+  textShadow,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -66,29 +60,19 @@ const RecessWord: React.FC<{
     <span
       style={{
         display: "inline-block",
-        position: "relative",
-        padding: `${pillPaddingY}px ${pillPaddingX}px`,
-        borderRadius: pillRadius,
-        background: isActive ? pillColor : "transparent",
+        fontFamily,
+        fontSize,
+        fontWeight,
+        color: isActive ? highlightColor : textColor,
+        textTransform: allCaps ? "uppercase" : "none",
+        letterSpacing,
+        lineHeight: 1,
+        whiteSpace: "nowrap",
+        textShadow,
+        transform: `scale(${scale})`,
       }}
     >
-      <span
-        style={{
-          display: "inline-block",
-          fontFamily,
-          fontSize,
-          fontWeight,
-          color: isActive ? pillTextColor : textColor,
-          textTransform: allCaps ? "uppercase" : "none",
-          letterSpacing,
-          lineHeight: 1,
-          whiteSpace: "nowrap",
-          textShadow: "0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5), 0 0 2px rgba(0,0,0,0.6)",
-          transform: `scale(${scale})`,
-        }}
-      >
-        {token.text}
-      </span>
+      {token.text}
     </span>
   );
 };
@@ -102,16 +86,13 @@ const RecessPage: React.FC<{
   maxWordsPerLine: number;
   lineGap: number;
   textColor: string;
-  pillColor: string;
-  pillTextColor: string;
-  pillRadius: number;
-  pillPaddingX: number;
-  pillPaddingY: number;
+  highlightColor: string;
   allCaps: boolean;
   fontSize: number;
   fontFamily: string;
   fontWeight: number | string;
   letterSpacing: string;
+  textShadow: string;
   lineHeight: number;
   emphasisWords: string[];
   emphasisScale: number;
@@ -183,10 +164,7 @@ const RecessPage: React.FC<{
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 4,
-            ...(line.isEmphasis
-              ? { fontSize: wordProps.fontSize * emphasisScale }
-              : {}),
+            gap: 10,
           }}
         >
           {line.tokens.map((token, idx) => (
@@ -209,7 +187,7 @@ const RecessPage: React.FC<{
 };
 
 // ---------------------------------------------------------------------------
-// ImageOverlay — slides up from bottom to half screen
+// ImageOverlay — slides up from bottom
 // ---------------------------------------------------------------------------
 
 const ImageOverlay: React.FC<{
@@ -224,7 +202,6 @@ const ImageOverlay: React.FC<{
   if (frame < appearFrame - 5) return null;
   if (frame > disappearFrame + 15) return null;
 
-  // Slide up from bottom
   const slideIn = spring({
     frame: frame - appearFrame,
     fps,
@@ -233,7 +210,6 @@ const ImageOverlay: React.FC<{
   });
   const slideY = interpolate(slideIn, [0, 1], [960, 0]);
 
-  // Slide back down on exit
   const slideOut = spring({
     frame: frame - disappearFrame,
     fps,
@@ -276,20 +252,17 @@ const ImageOverlay: React.FC<{
 export const Recess: React.FC<RecessProps> = ({
   pages,
   textColor = "#FFFFFF",
-  pillColor = "linear-gradient(90deg, #7B6BA5, #5A9E8F)",
-  pillTextColor = "#FFFFFF",
-  pillRadius = 10,
-  pillPaddingX = 16,
-  pillPaddingY = 6,
-  fontFamily = FONT_FAMILIES.montserrat,
-  fontSize = 58,
-  fontWeight = 800,
+  highlightColor = "#FFD700",
+  fontFamily = FONT_FAMILIES.oswald,
+  fontSize = 76,
+  fontWeight = 700,
   position = "bottom",
   maxWordsPerLine = 2,
   allCaps = true,
-  letterSpacing = "0.02em",
-  lineHeight = 1.05,
-  lineGap = 8,
+  letterSpacing = "0.06em",
+  lineHeight = 1.0,
+  lineGap = 4,
+  textShadow = "0 3px 12px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.6)",
   showGradient = true,
   emphasisWords = [],
   emphasisScale = 1.6,
@@ -298,8 +271,6 @@ export const Recess: React.FC<RecessProps> = ({
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  // Check if any image overlay is currently active — if so, captions move to center
-  // Synced exactly: active from appearFrame until disappearFrame + slide-out duration
   const slideOutFrames = Math.round(fps * 0.4);
   const activeOverlay = imageOverlays.find((entry) => {
     const aFrame = msToFrames(entry.appearAtMs, fps);
@@ -325,7 +296,6 @@ export const Recess: React.FC<RecessProps> = ({
 
   return (
     <AbsoluteFill>
-      {/* Dark gradient at bottom for readability */}
       {showGradient && !isOverlayActive && (
         <div
           style={{
@@ -341,12 +311,10 @@ export const Recess: React.FC<RecessProps> = ({
         />
       )}
 
-      {/* Image overlays */}
       {imageOverlays.map((entry, i) => (
         <ImageOverlay key={i} entry={entry} />
       ))}
 
-      {/* Caption pages */}
       {pages.map((page, pageIndex) => {
         const startFrame = msToFrames(page.startMs, fps);
         const durationFrames = msToFrames(page.durationMs, fps);
@@ -372,16 +340,13 @@ export const Recess: React.FC<RecessProps> = ({
                 maxWordsPerLine={maxWordsPerLine}
                 lineGap={lineGap}
                 textColor={textColor}
-                pillColor={pillColor}
-                pillTextColor={pillTextColor}
-                pillRadius={pillRadius}
-                pillPaddingX={pillPaddingX}
-                pillPaddingY={pillPaddingY}
+                highlightColor={highlightColor}
                 allCaps={allCaps}
                 fontSize={fontSize}
                 fontFamily={fontFamily}
                 fontWeight={fontWeight}
                 letterSpacing={letterSpacing}
+                textShadow={textShadow}
                 lineHeight={lineHeight}
                 emphasisWords={emphasisWords}
                 emphasisScale={emphasisScale}

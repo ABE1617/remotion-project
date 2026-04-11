@@ -3,26 +3,20 @@ import type { CaptionStyleProps } from "../shared/types";
 export interface RecessProps extends CaptionStyleProps {
   /** Default text color (default: "#FFFFFF") */
   textColor?: string;
-  /** Background color of the active word pill (default: "#3B8C7F") */
-  pillColor?: string;
-  /** Text color inside the active pill (default: "#FFFFFF") */
-  pillTextColor?: string;
-  /** Pill border radius in px (default: 10) */
-  pillRadius?: number;
-  /** Pill horizontal padding in px (default: 16) */
-  pillPaddingX?: number;
-  /** Pill vertical padding in px (default: 6) */
-  pillPaddingY?: number;
-  /** Max words per line (default: 3) */
+  /** Color of the active/highlighted word (default: "#FFD700") */
+  highlightColor?: string;
+  /** Max words per line (default: 2) */
   maxWordsPerLine?: number;
   /** Display text in all caps (default: true) */
   allCaps?: boolean;
-  /** CSS letter-spacing value (default: "0.02em") */
+  /** CSS letter-spacing value (default: "0.06em") */
   letterSpacing?: string;
-  /** Line height multiplier (default: 1.05) */
+  /** Line height multiplier (default: 1.0) */
   lineHeight?: number;
-  /** Gap between lines in px (default: 8) */
+  /** Gap between lines in px (default: 4) */
   lineGap?: number;
+  /** Text shadow for readability (default: heavy shadow) */
+  textShadow?: string;
   /** Show dark gradient at bottom for readability (default: true) */
   showGradient?: boolean;
   /** Words that get displayed alone at a bigger size (case-insensitive match) */

@@ -15,6 +15,7 @@ import { loadFont as loadLora } from "@remotion/google-fonts/Lora";
 import { loadFont as loadCormorantGaramond } from "@remotion/google-fonts/CormorantGaramond";
 import { loadFont as loadSacramento } from "@remotion/google-fonts/Sacramento";
 import { loadFont as loadMrDafoe } from "@remotion/google-fonts/MrDafoe";
+import { loadFont as loadRoboto } from "@remotion/google-fonts/Roboto";
 
 // Load all caption fonts at module scope so they're available immediately
 const montserrat = loadMontserrat();
@@ -32,6 +33,7 @@ const lora = loadLora();
 const cormorantGaramond = loadCormorantGaramond();
 const sacramento = loadSacramento();
 const mrDafoe = loadMrDafoe();
+const roboto = loadRoboto();
 
 loadLocalFont({
   family: "Hey August",
@@ -41,6 +43,11 @@ loadLocalFont({
 loadLocalFont({
   family: "Feeling Passionate",
   url: staticFile("FeelingPassionate.ttf"),
+});
+
+loadLocalFont({
+  family: "Mitha Script",
+  url: staticFile("MithaScript.otf"),
 });
 
 export const FONT_FAMILIES = {
@@ -60,7 +67,9 @@ export const FONT_FAMILIES = {
   sacramento: sacramento.fontFamily,
   mrDafoe: mrDafoe.fontFamily,
   heyAugust: "Hey August",
+  roboto: roboto.fontFamily,
   feelingPassionate: "Feeling Passionate",
+  mithaScript: "Mitha Script",
 } as const;
 
 export type FontName = keyof typeof FONT_FAMILIES;

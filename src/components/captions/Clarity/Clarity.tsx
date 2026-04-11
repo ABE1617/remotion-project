@@ -15,11 +15,6 @@ import { FONT_FAMILIES } from "../../../utils/fonts";
 import { msToFrames } from "../../../utils/timing";
 import { CAPTION_PADDING } from "../../../utils/captionPosition";
 
-function formatText(text: string, showPunctuation: boolean): string {
-  if (showPunctuation) return text;
-  return text.replace(/[.,!?;:'"()\-—…]/g, "");
-}
-
 // ---------------------------------------------------------------------------
 // ClarityPage — frosted glass caption
 // ---------------------------------------------------------------------------
@@ -27,40 +22,26 @@ function formatText(text: string, showPunctuation: boolean): string {
 const ClarityPage: React.FC<{
   page: TikTokPage;
   showPunctuation: boolean;
-  bgColor: string;
-  blurAmount: number;
   activeColor: string;
   fontSize: number;
   fontFamily: string;
   fontWeight: number | string;
   letterSpacing: string;
-  stripPaddingX: number;
-  stripPaddingY: number;
-  borderRadius: number;
   positionStyle: React.CSSProperties;
 }> = ({
   page,
   showPunctuation,
-  bgColor,
-  blurAmount,
   activeColor,
   fontSize,
   fontFamily,
   fontWeight,
   letterSpacing,
-  stripPaddingX,
-  stripPaddingY,
-  borderRadius,
   positionStyle,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
   const pageLocalMs = (frame / fps) * 1000;
-  const fadeIn = interpolate(pageLocalMs, [0, 120], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
   const fadeOut = interpolate(
     pageLocalMs,
     [page.durationMs - 150, page.durationMs],
@@ -68,33 +49,60 @@ const ClarityPage: React.FC<{
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
+  const floatX = Math.sin(frame * 0.06) * 3;
+  const floatY = Math.cos(frame * 0.045) * 4;
+  const floatRotate = Math.sin(frame * 0.035) * 0.5;
+
   return (
     <div
       style={{
         position: "absolute",
         left: "50%",
-        transform: "translateX(-50%)",
+        transform: `translateX(calc(-50% + ${floatX}px)) translateY(${floatY}px) rotate(${floatRotate}deg)`,
         maxWidth: "85%",
         ...positionStyle,
-        opacity: Math.min(fadeIn, fadeOut),
-        padding: `${stripPaddingY}px ${stripPaddingX}px`,
-        backgroundColor: bgColor,
-        backdropFilter: `blur(${blurAmount}px) saturate(1.4)`,
-        WebkitBackdropFilter: `blur(${blurAmount}px) saturate(1.4)`,
-        borderRadius,
-        border: "1px solid rgba(255,255,255,0.2)",
-        fontFamily,
-        fontSize,
-        fontWeight,
-        color: activeColor,
-        letterSpacing,
-        lineHeight: 1.3,
-        textShadow: "0 0 16px rgba(0,0,0,0.5), 0 0 6px rgba(0,0,0,0.4)",
-        textAlign: "left" as const,
-        whiteSpace: "nowrap",
+        opacity: fadeOut,
+        display: "flex",
+        flexWrap: "wrap",
+        justifyContent: "center",
+        gap: "0 14px",
       }}
     >
-      {formatText(page.text, showPunctuation)}
+      {page.tokens.map((token, idx) => {
+        // Word-by-word fade-in driven by timing
+        const tokenLocalMs = token.fromMs - page.startMs;
+        const wordFade = interpolate(
+          pageLocalMs,
+          [tokenLocalMs, tokenLocalMs + 80],
+          [0, 1],
+          { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+        );
+
+        const text = showPunctuation
+          ? token.text
+          : token.text.replace(/[.,!?;:'"()\-—…]/g, "");
+
+        return (
+          <span
+            key={idx}
+            style={{
+              display: "inline-block",
+              fontFamily,
+              fontSize,
+              fontWeight,
+              color: activeColor,
+              letterSpacing,
+              lineHeight: 1.1,
+              textTransform: "uppercase",
+              textShadow: "0 2px 12px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.5)",
+              whiteSpace: "nowrap",
+              opacity: wordFade,
+            }}
+          >
+            {text}
+          </span>
+        );
+      })}
     </div>
   );
 };
@@ -461,17 +469,17 @@ const ClarityToggleItem: React.FC<{
 
 export const Clarity: React.FC<ClarityProps> = ({
   pages,
-  bgColor = "rgba(255,255,255,0.17)",
-  blurAmount = 20,
-  activeColor = "#FFFFFF",
-  fontFamily = FONT_FAMILIES.inter,
-  fontSize = 86,
-  fontWeight = 500,
+  bgColor = "transparent",
+  blurAmount = 0,
+  activeColor = "#F0F0F0",
+  fontFamily = FONT_FAMILIES.poppins,
+  fontSize = 68,
+  fontWeight = 700,
   position = "bottom",
   borderRadius = 0,
-  stripPaddingX = 40,
-  stripPaddingY = 24,
-  letterSpacing = "0.02em",
+  stripPaddingX = 0,
+  stripPaddingY = 0,
+  letterSpacing = "0.12em",
   showPunctuation = true,
   stickyNotes = [],
   stickySize = 300,
@@ -507,16 +515,11 @@ export const Clarity: React.FC<ClarityProps> = ({
               <ClarityPage
                 page={page}
                 showPunctuation={showPunctuation}
-                bgColor={bgColor}
-                blurAmount={blurAmount}
                 activeColor={activeColor}
                 fontSize={fontSize}
                 fontFamily={fontFamily}
                 fontWeight={fontWeight}
                 letterSpacing={letterSpacing}
-                stripPaddingX={stripPaddingX}
-                stripPaddingY={stripPaddingY}
-                borderRadius={borderRadius}
                 positionStyle={positionStyle}
               />
             </AbsoluteFill>

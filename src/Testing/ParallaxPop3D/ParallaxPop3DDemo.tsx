@@ -121,7 +121,16 @@ export const ParallaxPop3DDemo: React.FC = () => {
         src={staticFile("sample-video.mp4")}
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
-      <ParallaxPop3D pages={PAGES} position="bottom" />
+      <ParallaxPop3D
+        pages={PAGES}
+        position="bottom"
+        sizedWords={[
+          { word: "great", scale: "slightlyBig" },
+          { word: "comfort", scale: "big" },
+          { word: "grind", scale: "tooBig" },
+          { word: "limits", scale: "slightlyBig" },
+        ]}
+      />
     </AbsoluteFill>
   );
 };

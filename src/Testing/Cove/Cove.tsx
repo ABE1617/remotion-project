@@ -108,20 +108,6 @@ export const Cove: React.FC<CoveProps> = ({
                           zIndex: lineIdx + 1,
                         }}
                       >
-                        <div
-                          style={{
-                            position: "absolute",
-                            top: "-60px",
-                            bottom: "-60px",
-                            left: "-100px",
-                            right: "-100px",
-                            borderRadius: "50%",
-                            background:
-                              "radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.18) 40%, rgba(0,0,0,0) 70%)",
-                            filter: "blur(40px)",
-                            pointerEvents: "none",
-                          }}
-                        />
                         {lineTokens.map((token, tokenIdx) => {
                           const isSpecial = boxedSet.has(
                             token.text.toLowerCase(),
@@ -160,10 +146,36 @@ export const Cove: React.FC<CoveProps> = ({
                                 textShadow: !isSpoken
                                   ? "none"
                                   : isSpecial
-                                    ? "0 0 12px rgba(255,255,255,0.7), 0 0 28px rgba(255,245,230,0.4), 0 0 50px rgba(255,240,220,0.2), 0 3px 12px rgba(0,0,0,0.5), 0 6px 24px rgba(0,0,0,0.3), 0 10px 36px rgba(0,0,0,0.15)"
-                                    : "0 3px 12px rgba(0,0,0,0.5), 0 6px 24px rgba(0,0,0,0.3), 0 10px 36px rgba(0,0,0,0.15)",
+                                    ? "0 0 12px rgba(255,255,255,0.7), 0 0 28px rgba(255,245,230,0.4), 0 0 50px rgba(255,240,220,0.2), 0 -20px 30px rgba(0,0,0,0.45), 0 -12px 20px rgba(0,0,0,0.35), 0 -6px 10px rgba(0,0,0,0.25), 0 0 6px rgba(0,0,0,0.15)"
+                                    : "none",
                               }}
                             >
+                              {/* Word-shaped blurred shadow biased above */}
+                              {!isSpecial && isSpoken && (
+                                <span
+                                  aria-hidden="true"
+                                  style={{
+                                    position: "absolute",
+                                    top: isSpecial ? "-30px" : "-20px",
+                                    left: 0,
+                                    right: 0,
+                                    fontFamily: isSpecial ? FONT_FAMILIES.playfairDisplay : FONT_FAMILIES.montserrat,
+                                    fontSize: isSpecial ? fontSize * 1.8 : fontSize,
+                                    fontWeight: isSpecial ? 400 : 700,
+                                    fontStyle: isSpecial ? "italic" : "normal",
+                                    letterSpacing: isSpecial ? "-0.02em" : "normal",
+                                    lineHeight: isSpecial ? 0.8 : 1,
+                                    color: "rgba(0,0,0,0.6)",
+                                    filter: "blur(18px)",
+                                    clipPath: "none",
+                                    pointerEvents: "none",
+                                    zIndex: -1,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {token.text}
+                                </span>
+                              )}
                               {isSpecial && isSpoken && (
                                 <span
                                   style={{

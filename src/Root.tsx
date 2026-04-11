@@ -10,6 +10,7 @@ import { PaperIIDemo } from "./compositions/PaperIIDemo";
 import { ClarityDemo } from "./compositions/ClarityDemo";
 import { RecessDemo } from "./compositions/RecessDemo";
 import { PrimeDemo } from "./compositions/PrimeDemo";
+import { PrismDemo } from "./compositions/PrismDemo";
 import { DynamicAIEmphasisDemo } from "./Testing/DynamicAIEmphasis/DynamicAIEmphasisDemo";
 import { HormoziEvolvedDemo } from "./Testing/HormoziEvolved/HormoziEvolvedDemo";
 import { CinematicLetterpressDemo } from "./Testing/CinematicLetterpress/CinematicLetterpressDemo";
@@ -31,6 +32,7 @@ import { RetroVHSDemo } from "./Testing/RetroVHS/RetroVHSDemo";
 import { ParticleDissolveDemo } from "./Testing/ParticleDissolve/ParticleDissolveDemo";
 import { RunawayDemo } from "./Testing/Runaway/RunawayDemo";
 import { CoveDemo } from "./Testing/Cove/CoveDemo";
+import { QuintessenceDemo } from "./Testing/Quintessence/QuintessenceDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -114,6 +116,14 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={210}
+        />
+        <Composition
+          id="caption-prism"
+          component={PrismDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={420}
         />
         <Composition
           id="caption-dynamic-ai-emphasis"
@@ -218,6 +228,14 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={285}
+        />
+        <Composition
+          id="caption-quintessence"
+          component={QuintessenceDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={270}
         />
       </Folder>
       <Folder name="Zoom-Effects">

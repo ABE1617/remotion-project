@@ -16,6 +16,8 @@ import { loadFont as loadCormorantGaramond } from "@remotion/google-fonts/Cormor
 import { loadFont as loadSacramento } from "@remotion/google-fonts/Sacramento";
 import { loadFont as loadMrDafoe } from "@remotion/google-fonts/MrDafoe";
 import { loadFont as loadRoboto } from "@remotion/google-fonts/Roboto";
+import { loadFont as loadOutfit } from "@remotion/google-fonts/Outfit";
+import { loadFont as loadBarlowCondensed } from "@remotion/google-fonts/BarlowCondensed";
 
 // Load all caption fonts at module scope so they're available immediately
 const montserrat = loadMontserrat();
@@ -34,6 +36,8 @@ const cormorantGaramond = loadCormorantGaramond();
 const sacramento = loadSacramento();
 const mrDafoe = loadMrDafoe();
 const roboto = loadRoboto();
+const outfit = loadOutfit();
+const barlowCondensed = loadBarlowCondensed();
 
 loadLocalFont({
   family: "Hey August",
@@ -68,6 +72,8 @@ export const FONT_FAMILIES = {
   mrDafoe: mrDafoe.fontFamily,
   heyAugust: "Hey August",
   roboto: roboto.fontFamily,
+  outfit: outfit.fontFamily,
+  barlowCondensed: barlowCondensed.fontFamily,
   feelingPassionate: "Feeling Passionate",
   mithaScript: "Mitha Script",
 } as const;

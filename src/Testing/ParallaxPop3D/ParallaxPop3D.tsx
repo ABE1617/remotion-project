@@ -10,7 +10,8 @@ import {
 } from "remotion";
 import type { SpringConfig } from "remotion";
 import type { TikTokToken, TikTokPage } from "../../types/captions";
-import type { ParallaxPop3DProps } from "./types";
+import type { ParallaxPop3DProps, SizedWord } from "./types";
+import { SIZE_PRESETS } from "./types";
 import { FONT_FAMILIES } from "../../utils/fonts";
 import { msToFrames } from "../../utils/timing";
 import { CAPTION_PADDING } from "../../utils/captionPosition";
@@ -79,6 +80,7 @@ const ParallaxPop3DWord: React.FC<{
   activeTranslateY: number;
   popSpringConfig: SpringConfig;
   pastWordOpacity: number;
+  sizedScale: number;
 }> = ({
   token,
   pageStartMs,
@@ -101,6 +103,7 @@ const ParallaxPop3DWord: React.FC<{
   activeTranslateY,
   popSpringConfig,
   pastWordOpacity,
+  sizedScale,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -116,17 +119,29 @@ const ParallaxPop3DWord: React.FC<{
   const isPast = pageLocalMs >= tokenEndMs;
   const hasAppeared = pageLocalMs >= tokenStartMs;
 
-  // ── No animation — static display ──────────────────────────────────────
-  const entranceOpacity = hasAppeared ? 1 : 0;
-  const entranceTranslateY = 0;
+  // ── Entrance spring ─────────────────────────────────────────────────
+  const entranceFrame = Math.round((tokenStartMs / 1000) * fps);
+  const entranceSpring = hasAppeared
+    ? spring({ fps, frame: frame - entranceFrame, config: { mass: 0.4, damping: 14, stiffness: 200 } })
+    : 0;
+  const entranceOpacity = entranceSpring;
+  const entranceTranslateY = interpolate(entranceSpring, [0, 1], [12, 0], { extrapolateRight: "clamp" });
 
-  const effectivePopAmount = isActive ? 1 : 0;
+  // ── Pop spring (active word) ───────────────────────────────────────
+  const popFrame = Math.round((tokenStartMs / 1000) * fps);
+  const popSpring = isActive
+    ? spring({ fps, frame: frame - popFrame, config: popSpringConfig })
+    : 0;
+  const dePopSpring = isPast
+    ? spring({ fps, frame: frame - Math.round((tokenEndMs / 1000) * fps), config: { mass: 0.4, damping: 16, stiffness: 180 } })
+    : 0;
+  const effectivePopAmount = popSpring - dePopSpring;
 
-  const currentLayers = isActive ? activeDepthLayers : restingDepthLayers;
-  const currentOffset = isActive ? activeOffsetPerLayer : restingOffsetPerLayer;
-  const currentAmbientBlur = isActive ? activeAmbientBlur : restingAmbientBlur;
-  const currentScale = 1;
-  const currentTranslateY = 0;
+  const currentLayers = Math.round(lerp(restingDepthLayers, activeDepthLayers, clamp(effectivePopAmount, 0, 1)));
+  const currentOffset = lerp(restingOffsetPerLayer, activeOffsetPerLayer, clamp(effectivePopAmount, 0, 1));
+  const currentAmbientBlur = lerp(restingAmbientBlur, activeAmbientBlur, clamp(effectivePopAmount, 0, 1));
+  const currentScale = lerp(1, activeScale, clamp(effectivePopAmount, 0, 1));
+  const currentTranslateY = lerp(0, activeTranslateY, clamp(effectivePopAmount, 0, 1));
 
   // ── Memoized resting shadow (only recomputed when props change) ───────
   const restingShadow = useMemo(
@@ -166,8 +181,7 @@ const ParallaxPop3DWord: React.FC<{
     [primaryColor, activeColor],
   );
 
-  // ── Opacity: fully opaque, no dimming ──────────────────────────────────
-  const wordOpacity = entranceOpacity;
+  const wordOpacity = isPast ? entranceOpacity * pastWordOpacity : entranceOpacity;
 
   // ── Combined transforms ───────────────────────────────────────────────
   const totalTranslateY = entranceTranslateY + currentTranslateY;
@@ -179,7 +193,7 @@ const ParallaxPop3DWord: React.FC<{
       style={{
         display: "inline-block",
         fontFamily,
-        fontSize,
+        fontSize: fontSize * sizedScale,
         fontWeight,
         color,
         letterSpacing,
@@ -225,6 +239,7 @@ const ParallaxPop3DPage: React.FC<{
   activeTranslateY: number;
   popSpringConfig: SpringConfig;
   pastWordOpacity: number;
+  sizedWords: SizedWord[];
 }> = ({
   page,
   fontFamily,
@@ -248,6 +263,7 @@ const ParallaxPop3DPage: React.FC<{
   activeTranslateY,
   popSpringConfig,
   pastWordOpacity,
+  sizedWords,
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -255,8 +271,12 @@ const ParallaxPop3DPage: React.FC<{
   // Page-local time for fade-out
   const pageLocalMs = (frame / fps) * 1000;
 
-  // ── No exit fade — static display ──────────────────────────────────────
-  const exitOpacity = 1;
+  const exitOpacity = interpolate(
+    pageLocalMs,
+    [page.durationMs - 150, page.durationMs],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
 
   // ── Split tokens into lines ───────────────────────────────────────────
   const lines: TikTokToken[][] = [];
@@ -286,7 +306,16 @@ const ParallaxPop3DPage: React.FC<{
             gap: 0,
           }}
         >
-          {lineTokens.map((token, tokenIdx) => (
+          {lineTokens.map((token, tokenIdx) => {
+            const sizedMatch = sizedWords.find(
+              (sw) => sw.word.toLowerCase() === token.text.toLowerCase(),
+            );
+            const resolvedScale = sizedMatch
+              ? typeof sizedMatch.scale === "string"
+                ? SIZE_PRESETS[sizedMatch.scale]
+                : sizedMatch.scale
+              : 1;
+            return (
             <div
               key={`${lineIdx}-${tokenIdx}`}
               style={{ padding: "0 24px" }}
@@ -313,9 +342,11 @@ const ParallaxPop3DPage: React.FC<{
                 activeTranslateY={activeTranslateY}
                 popSpringConfig={popSpringConfig}
                 pastWordOpacity={pastWordOpacity}
+                sizedScale={resolvedScale}
               />
             </div>
-          ))}
+            );
+          })}
         </div>
       ))}
     </div>
@@ -327,7 +358,7 @@ const ParallaxPop3DPage: React.FC<{
 export const ParallaxPop3D: React.FC<ParallaxPop3DProps> = ({
   pages,
   fontFamily = FONT_FAMILIES.montserrat,
-  fontSize = 110,
+  fontSize = 95,
   fontWeight = 900,
   primaryColor = "#FFFFFF",
   position = "center",
@@ -348,6 +379,7 @@ export const ParallaxPop3D: React.FC<ParallaxPop3DProps> = ({
   letterSpacing = "0.05em",
   lineGap = 12,
   pastWordOpacity = 0.7,
+  sizedWords = [],
 }) => {
   const { fps } = useVideoConfig();
 
@@ -431,6 +463,7 @@ export const ParallaxPop3D: React.FC<ParallaxPop3DProps> = ({
                   activeTranslateY={activeTranslateY}
                   popSpringConfig={popSpringConfig}
                   pastWordOpacity={pastWordOpacity}
+                  sizedWords={sizedWords}
                 />
               </div>
             </AbsoluteFill>

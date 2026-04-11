@@ -28,3 +28,7 @@ export type { RecessProps } from "./Recess";
 
 export { Prime } from "./Prime";
 export type { PrimeProps } from "./Prime";
+
+export { Prism } from "./Prism";
+export type { PrismProps, PrismPresetName, PrismColorPreset } from "./Prism";
+export { PRISM_PRESETS } from "./Prism";

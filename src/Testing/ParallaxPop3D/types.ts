@@ -1,7 +1,23 @@
 import type { SpringConfig } from "remotion";
 import type { CaptionStyleProps } from "../../types/captions";
 
+export const SIZE_PRESETS = {
+  normal: 1,
+  slightlyBig: 1.25,
+  big: 1.5,
+  tooBig: 1.9,
+} as const;
+
+export type SizePreset = keyof typeof SIZE_PRESETS;
+
+export interface SizedWord {
+  word: string;
+  scale: number | SizePreset;
+}
+
 export interface ParallaxPop3DProps extends CaptionStyleProps {
+  /** Words with custom size multipliers. e.g. [{ word: "GRIND", scale: 1.5 }] */
+  sizedWords?: SizedWord[];
   /** Number of shadow layers at rest. Default: 6 */
   restingDepthLayers?: number;
   /** Number of shadow layers when active. Default: 12 */

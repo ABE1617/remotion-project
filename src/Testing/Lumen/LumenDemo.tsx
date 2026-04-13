@@ -65,6 +65,7 @@ const PAGES: TikTokPage[] = [
 ];
 
 const KEYWORDS = ["dying", "captions", "lose", "viewers", "grow"];
+const SHINE_WORDS = ["captions", "grow"];
 
 export const LumenDemo: React.FC = () => {
   return (
@@ -73,7 +74,7 @@ export const LumenDemo: React.FC = () => {
         src={staticFile("sample-video.mp4")}
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
-      <Lumen pages={PAGES} keywords={KEYWORDS} position="bottom" />
+      <Lumen pages={PAGES} keywords={KEYWORDS} shineWords={SHINE_WORDS} position="bottom" />
     </AbsoluteFill>
   );
 };

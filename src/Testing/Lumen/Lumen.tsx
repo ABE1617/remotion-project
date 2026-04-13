@@ -7,7 +7,6 @@ import {
   spring,
   interpolate,
 } from "remotion";
-import { LightLeak } from "@remotion/light-leaks";
 import type { TikTokPage, TikTokToken } from "../../types/captions";
 import type { LumenProps } from "./types";
 import { msToFrames } from "../../utils/timing";
@@ -22,6 +21,7 @@ const LumenWord: React.FC<{
   pageStartMs: number;
   fontSize: number;
   isKw: boolean;
+  hasShine: boolean;
   textColor: string;
   keywordColor: string;
   sweepDuration: number;
@@ -30,6 +30,7 @@ const LumenWord: React.FC<{
   pageStartMs,
   fontSize,
   isKw,
+  hasShine,
   textColor,
   keywordColor,
   sweepDuration,
@@ -50,84 +51,88 @@ const LumenWord: React.FC<{
     extrapolateRight: "clamp",
   });
 
-  // Lens flare sweep position for keywords
-  const sweepPosition = isKw && hasAppeared
+  // Lens flare sweep position — only for shine words
+  const sweepPosition = hasShine && hasAppeared
     ? interpolate(elapsed, [0, sweepDuration], [-100, 200], {
         extrapolateLeft: "clamp",
         extrapolateRight: "clamp",
       })
     : -100;
 
-  const wordFontSize = isKw ? fontSize * 1.35 : fontSize;
+  const wordFontSize = hasShine ? fontSize * 1.6 : isKw ? fontSize * 1.3 : fontSize;
   const color = isKw ? keywordColor : textColor;
+
+  const fontProps: React.CSSProperties = {
+    fontFamily: isKw
+      ? FONT_FAMILIES.playfairDisplay
+      : FONT_FAMILIES.montserrat,
+    fontWeight: isKw ? 400 : 600,
+    fontStyle: isKw ? "italic" : "normal",
+    fontSize: wordFontSize,
+    lineHeight: 1.1,
+    whiteSpace: "nowrap" as const,
+    letterSpacing: isKw ? "-0.02em" : "0.01em",
+  };
+
+  // Sweep clip: angled white strip that moves left→right
+  const w = 15;
+  const skew = 20;
+  const p = sweepPosition;
+  const showSweep = hasShine && hasAppeared && p > -w - skew && p < 100 + w + skew;
+  const polyClip = `polygon(${p - w}% ${-skew}%, ${p + w}% ${-skew - 10}%, ${p + w + skew}% ${100 + 10}%, ${p - w + skew}% ${100 + skew}%)`;
+
+  // Diffused shadow for legibility — no outlines needed
+  const diffusedShadow = [
+    "0 0 12px rgba(0,0,0,0.7)",
+    "0 0 30px rgba(0,0,0,0.4)",
+    "0 0 50px rgba(0,0,0,0.2)",
+    "1px 2px 5px rgba(0,0,0,0.4)",
+  ];
+
+  const kwGlow = [
+    "0 0 20px rgba(212,162,76,0.5)",
+    "0 0 40px rgba(212,162,76,0.3)",
+  ];
 
   return (
     <span
       style={{
         display: "inline-block",
         position: "relative",
-        overflow: "hidden",
-        fontFamily: isKw
-          ? FONT_FAMILIES.playfairDisplay
-          : FONT_FAMILIES.montserrat,
-        fontWeight: isKw ? 400 : 600,
-        fontStyle: isKw ? "italic" : "normal",
-        fontSize: wordFontSize,
-        lineHeight: 1.1,
+        ...fontProps,
         color: hasAppeared ? color : "transparent",
         opacity: entranceSpring,
         transform: `scale(${scale})`,
         transformOrigin: "center bottom",
         textShadow: hasAppeared
           ? isKw
-            ? "0 0 20px rgba(212,162,76,0.5), 0 0 40px rgba(212,162,76,0.3), 0 2px 8px rgba(0,0,0,0.4)"
-            : "0 2px 10px rgba(0,0,0,0.5)"
+            ? [...diffusedShadow, ...kwGlow].join(", ")
+            : diffusedShadow.join(", ")
           : "none",
-        whiteSpace: "nowrap",
-        letterSpacing: isKw ? "-0.02em" : "0.01em",
       }}
     >
       {token.text}
-      {/* Gradient sweep (lens flare) for keywords */}
-      {isKw && hasAppeared && (
-        <div
+      {/* Shine sweep */}
+      {showSweep && (
+        <span
+          aria-hidden="true"
           style={{
+            ...fontProps,
             position: "absolute",
             top: 0,
-            bottom: 0,
-            left: `${sweepPosition}%`,
-            width: "40%",
-            background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+            left: 0,
+            color: "#FFFFFF",
+            textShadow: "0 0 10px rgba(255,255,255,0.8)",
+            clipPath: polyClip,
             pointerEvents: "none",
           }}
-        />
+        >
+          {token.text}
+        </span>
       )}
     </span>
   );
 };
-
-/* ─── Light Leak Timing ─── */
-
-/**
- * Find frames where keywords appear so we can time light leaks.
- * Returns the first keyword hit per page.
- */
-function findKeywordHits(
-  pages: TikTokPage[],
-  keywordSet: Set<string>,
-  fps: number,
-): { startFrame: number; durationFrames: number }[] {
-  const hits: { startFrame: number; durationFrames: number }[] = [];
-  for (const page of pages) {
-    const firstKw = page.tokens.find((t) => isKeyword(t.text, keywordSet));
-    if (firstKw) {
-      const startFrame = msToFrames(firstKw.fromMs, fps) - 5; // Start slightly before
-      hits.push({ startFrame: Math.max(0, startFrame), durationFrames: 30 });
-    }
-  }
-  return hits;
-}
 
 /* ─── Main Component ─── */
 
@@ -136,43 +141,21 @@ export const Lumen: React.FC<LumenProps> = ({
   fontSize = 70,
   position = "bottom",
   keywords = [],
+  shineWords = [],
   maxWordsPerLine = 4,
-  lineGap = 14,
+  lineGap = 0,
   wordGap = 14,
   textColor = "#FFFFFF",
   keywordColor = "#D4A24C",
-  showLightLeak = true,
-  lightLeakHueShift = 40,
   sweepDuration = 15,
 }) => {
   const { fps } = useVideoConfig();
   const keywordSet = useMemo(() => buildKeywordSet(keywords), [keywords]);
+  const shineSet = useMemo(() => buildKeywordSet(shineWords), [shineWords]);
   const positionStyle = getCaptionPositionStyle(position);
-
-  const keywordHits = useMemo(
-    () => findKeywordHits(pages, keywordSet, fps),
-    [pages, keywordSet, fps],
-  );
 
   return (
     <AbsoluteFill>
-      {/* Light leak overlays timed to keyword hits */}
-      {showLightLeak &&
-        keywordHits.map((hit, idx) => (
-          <Sequence
-            key={`leak-${idx}`}
-            from={hit.startFrame}
-            durationInFrames={hit.durationFrames}
-          >
-            <LightLeak
-              seed={idx}
-              hueShift={lightLeakHueShift}
-              style={{ opacity: 0.15 }}
-            />
-          </Sequence>
-        ))}
-
-      {/* Caption text */}
       {pages.map((page, pageIndex) => {
         const startFrame = msToFrames(page.startMs, fps);
         const durationFrames = msToFrames(page.durationMs, fps);
@@ -224,6 +207,7 @@ export const Lumen: React.FC<LumenProps> = ({
                         pageStartMs={page.startMs}
                         fontSize={fontSize}
                         isKw={isKeyword(token.text, keywordSet)}
+                        hasShine={isKeyword(token.text, shineSet)}
                         textColor={textColor}
                         keywordColor={keywordColor}
                         sweepDuration={sweepDuration}

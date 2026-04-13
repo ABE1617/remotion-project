@@ -41,10 +41,6 @@ const EditorialPopPage: React.FC<{
   );
   const opacity = fadeIn * fadeOut;
 
-  // Float
-  const t = frame / fps;
-  const floatY = Math.sin(t * 1.2) * 14 + Math.sin(t * 1.8) * 7;
-
   const shadow = [
     "0 0 12px rgba(0,0,0,0.7)",
     "0 0 30px rgba(0,0,0,0.4)",
@@ -62,8 +58,6 @@ const EditorialPopPage: React.FC<{
         gap: "0px 14px",
         lineHeight: 0.75,
         opacity,
-        transform: `translateY(${floatY.toFixed(2)}px)`,
-        willChange: "transform",
       }}
     >
       {tokens.map((token, idx) => {

@@ -46,6 +46,7 @@ import { ContrastDemo } from "./Testing/Contrast/ContrastDemo";
 import { DispatchDemo } from "./Testing/Dispatch/DispatchDemo";
 import { TelemetryDemo } from "./Testing/Telemetry/TelemetryDemo";
 import { PulseDemo } from "./Testing/Pulse/PulseDemo";
+import { EditorialPopDemo } from "./Testing/EditorialPop/EditorialPopDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -349,6 +350,14 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="caption-pulse"
           component={PulseDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-editorial-pop"
+          component={EditorialPopDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}

@@ -18,6 +18,9 @@ import { loadFont as loadMrDafoe } from "@remotion/google-fonts/MrDafoe";
 import { loadFont as loadRoboto } from "@remotion/google-fonts/Roboto";
 import { loadFont as loadOutfit } from "@remotion/google-fonts/Outfit";
 import { loadFont as loadBarlowCondensed } from "@remotion/google-fonts/BarlowCondensed";
+import { loadFont as loadDMSans } from "@remotion/google-fonts/DMSans";
+import { loadFont as loadFiraSansCondensed } from "@remotion/google-fonts/FiraSansCondensed";
+import { loadFont as loadJetBrainsMono } from "@remotion/google-fonts/JetBrainsMono";
 
 // Load all caption fonts at module scope so they're available immediately
 const montserrat = loadMontserrat();
@@ -38,6 +41,9 @@ const mrDafoe = loadMrDafoe();
 const roboto = loadRoboto();
 const outfit = loadOutfit();
 const barlowCondensed = loadBarlowCondensed();
+const dmSans = loadDMSans();
+const firaSansCondensed = loadFiraSansCondensed();
+const jetBrainsMono = loadJetBrainsMono();
 
 loadLocalFont({
   family: "Hey August",
@@ -74,6 +80,9 @@ export const FONT_FAMILIES = {
   roboto: roboto.fontFamily,
   outfit: outfit.fontFamily,
   barlowCondensed: barlowCondensed.fontFamily,
+  dmSans: dmSans.fontFamily,
+  firaSansCondensed: firaSansCondensed.fontFamily,
+  jetBrainsMono: jetBrainsMono.fontFamily,
   feelingPassionate: "Feeling Passionate",
   mithaScript: "Mitha Script",
 } as const;

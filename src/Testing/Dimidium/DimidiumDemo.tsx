@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, staticFile } from "remotion";
 import { Video } from "@remotion/media";
-import { Drift } from "./Drift";
+import { Dimidium } from "./Dimidium";
 import type { TikTokPage } from "../../types/captions";
 
 const PAGES: TikTokPage[] = [
@@ -46,14 +46,14 @@ const PAGES: TikTokPage[] = [
   },
 ];
 
-export const DriftDemo: React.FC = () => {
+export const DimidiumDemo: React.FC = () => {
   return (
     <AbsoluteFill>
       <Video
         src={staticFile("sample-video.mp4")}
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
-      <Drift
+      <Dimidium
         pages={PAGES}
         highlightWords={["stop", "boost", "watch", "win", "attention"]}
       />

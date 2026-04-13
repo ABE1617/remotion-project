@@ -7,7 +7,7 @@ import {
   interpolate,
 } from "remotion";
 import type { TikTokPage, TikTokToken } from "../../types/captions";
-import type { DriftProps } from "./types";
+import type { DimidiumProps } from "./types";
 import { msToFrames } from "../../utils/timing";
 import { FONT_FAMILIES } from "../../utils/fonts";
 import { CAPTION_PADDING } from "../../utils/captionPosition";
@@ -23,7 +23,7 @@ function getWordScale(text: string, isHighlight: boolean, wordIndex: number): nu
 
 /* ─── Word Component ─── */
 
-const DriftWord: React.FC<{
+const DimidiumWord: React.FC<{
   token: TikTokToken;
   pageStartMs: number;
   fontSize: number;
@@ -98,7 +98,7 @@ const DriftWord: React.FC<{
 
 /* ─── Page Component ─── */
 
-const DriftPage: React.FC<{
+const DimidiumPage: React.FC<{
   page: TikTokPage;
   fontSize: number;
   color: string;
@@ -153,7 +153,7 @@ const DriftPage: React.FC<{
             }}
           >
             {lineTokens.map((token, tokenIdx) => (
-              <DriftWord
+              <DimidiumWord
                 key={tokenIdx}
                 token={token}
                 pageStartMs={page.startMs}
@@ -173,7 +173,7 @@ const DriftPage: React.FC<{
 
 /* ─── Main Component ─── */
 
-export const Drift: React.FC<DriftProps> = ({
+export const Dimidium: React.FC<DimidiumProps> = ({
   pages,
   fontSize = 82,
   position = "bottom",
@@ -220,7 +220,7 @@ export const Drift: React.FC<DriftProps> = ({
                 paddingRight: CAPTION_PADDING.sides,
               }}
             >
-              <DriftPage
+              <DimidiumPage
                 page={page}
                 fontSize={fontSize}
                 color={color}

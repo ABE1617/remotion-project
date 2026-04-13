@@ -33,7 +33,19 @@ import { ParticleDissolveDemo } from "./Testing/ParticleDissolve/ParticleDissolv
 import { RunawayDemo } from "./Testing/Runaway/RunawayDemo";
 import { CoveDemo } from "./Testing/Cove/CoveDemo";
 import { QuintessenceDemo } from "./Testing/Quintessence/QuintessenceDemo";
-import { DriftDemo } from "./Testing/Drift/DriftDemo";
+import { DimidiumDemo } from "./Testing/Dimidium/DimidiumDemo";
+import { EmberDemo } from "./Testing/Ember/EmberDemo";
+import { VinylDemo } from "./Testing/Vinyl/VinylDemo";
+import { MagazineDemo } from "./Testing/Magazine/MagazineDemo";
+import { MonolithDemo } from "./Testing/Monolith/MonolithDemo";
+import { LumenDemo } from "./Testing/Lumen/LumenDemo";
+import { HushDemo } from "./Testing/Hush/HushDemo";
+import { SignalDemo } from "./Testing/Signal/SignalDemo";
+import { SerifDemo } from "./Testing/Serif/SerifDemo";
+import { ContrastDemo } from "./Testing/Contrast/ContrastDemo";
+import { DispatchDemo } from "./Testing/Dispatch/DispatchDemo";
+import { TelemetryDemo } from "./Testing/Telemetry/TelemetryDemo";
+import { PulseDemo } from "./Testing/Pulse/PulseDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -135,7 +147,7 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={270}
         />
         <Composition
-          id="caption-cinematic-letterpress"
+          id="caption-letterpress"
           component={CinematicLetterpressDemo}
           width={WIDTH}
           height={HEIGHT}
@@ -239,12 +251,108 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={270}
         />
         <Composition
-          id="caption-drift"
-          component={DriftDemo}
+          id="caption-dimidium"
+          component={DimidiumDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
           durationInFrames={250}
+        />
+        <Composition
+          id="caption-ember"
+          component={EmberDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-vinyl"
+          component={VinylDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-magazine"
+          component={MagazineDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-monolith"
+          component={MonolithDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-lumen"
+          component={LumenDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-hush"
+          component={HushDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-signal"
+          component={SignalDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-serif"
+          component={SerifDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-contrast"
+          component={ContrastDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-dispatch"
+          component={DispatchDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-telemetry"
+          component={TelemetryDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-pulse"
+          component={PulseDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
         />
       </Folder>
       <Folder name="Zoom-Effects">

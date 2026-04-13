@@ -1,6 +1,6 @@
 import type { CaptionStyleProps } from "../../types/captions";
 
-export interface DriftProps extends CaptionStyleProps {
+export interface DimidiumProps extends CaptionStyleProps {
   /** Color for normal words. Default: "#FFFFFF" */
   color?: string;
   /** Color for highlighted keywords. Default: "#E8D44D" */

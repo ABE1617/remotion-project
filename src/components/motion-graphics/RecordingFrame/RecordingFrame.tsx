@@ -1,7 +1,11 @@
 import React from "react";
-import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
+import {
+  AbsoluteFill,
+  interpolate,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
 import { FONT_FAMILIES } from "../../../utils/fonts";
-import { resolveMGPosition } from "../shared/positioning";
 import { useMGPhase } from "../shared/useMGPhase";
 import type {
   RecordingFrameAnnotation,
@@ -9,40 +13,39 @@ import type {
 } from "./types";
 
 // ---------------------------------------------------------------------------
-// RecordingFrame — camera-viewfinder overlay lifted from the Telemetry
-// caption. Thin inset border, a scan line sweeping down, and four corner
-// annotations (ELAPSED counter, CAM, FORMAT, REC by default). Every
-// element is customizable.
+// RecordingFrame — camera-viewfinder overlay extracted from Telemetry.
+// Full-frame by design: thin 30px inset border, scan line sweeping down,
+// four corner annotations. Visual spec is identical to the original
+// Telemetry frame.
 // ---------------------------------------------------------------------------
 
 const DEFAULT_ANNOTATIONS: RecordingFrameAnnotation[] = [
   { label: "ELAPSED", value: "timestamp", corner: "top-left" },
-  { label: "CAM", value: "01", corner: "top-right" },
-  { label: "FORMAT", value: "1080P 30FPS", corner: "bottom-left" },
-  { label: "REC", value: "●", corner: "bottom-right" },
+  { label: "WORDS", value: "wordcount", corner: "top-right" },
+  { label: "RATE", value: "wpm", corner: "bottom-left" },
+  { label: "SIG", value: "ACTIVE", corner: "bottom-right" },
 ];
 
 const cornerToStyle = (
   corner: RecordingFrameAnnotation["corner"],
-  inset: number,
 ): React.CSSProperties => {
   const base: React.CSSProperties = { position: "absolute" };
   switch (corner) {
     case "top-left":
-      base.top = inset;
-      base.left = inset;
+      base.top = 40;
+      base.left = 40;
       break;
     case "top-right":
-      base.top = inset;
-      base.right = inset;
+      base.top = 40;
+      base.right = 40;
       break;
     case "bottom-left":
-      base.bottom = inset;
-      base.left = inset;
+      base.bottom = 40;
+      base.left = 40;
       break;
     case "bottom-right":
-      base.bottom = inset;
-      base.right = inset;
+      base.bottom = 40;
+      base.right = 40;
       break;
   }
   return base;
@@ -58,32 +61,21 @@ export const RecordingFrame: React.FC<RecordingFrameProps> = ({
   annotationFontSize = 24,
   showFrame = true,
   frameBorderColor = "rgba(240,238,233,0.08)",
-  frameInset = 30,
   showScanLine = true,
-  scanLineColor,
+  scanLineColor = "rgba(197,67,46,0.15)",
   scanLineCycle = 90,
   annotations = DEFAULT_ANNOTATIONS,
-  anchor,
-  offsetX,
-  offsetY,
-  scale,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
     { defaultEnterFrames: 8, defaultExitFrames: 8 },
   );
 
-  const { containerStyle, wrapperStyle } = resolveMGPosition({
-    anchor,
-    offsetX,
-    offsetY,
-    scale,
-  });
-
   if (!visible) return null;
 
-  // Whole-overlay fade in/out so the frame doesn't hard-pop.
+  // Whole-overlay fade in/out so it doesn't hard-pop.
   const enterOpacity = interpolate(localFrame, [0, 8], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -91,94 +83,93 @@ export const RecordingFrame: React.FC<RecordingFrameProps> = ({
   const exitOpacity = 1 - exitProgress;
   const overlayOpacity = enterOpacity * exitOpacity;
 
-  // Scan line Y position — loops through scanLineCycle frames.
+  // Scan line Y — cycles off the absolute frame like the original Telemetry.
   const scanY = interpolate(
     frame % scanLineCycle,
     [0, scanLineCycle],
     [0, 1920],
   );
 
-  const resolvedScanColor = scanLineColor ?? `${accentColor}26`; // ~15% alpha
+  const elapsedSeconds = Math.max(0, localFrame) / fps;
 
-  // Elapsed seconds since the component started.
-  const elapsedSeconds = Math.max(0, localFrame) / 30;
+  const resolveValue = (raw: string): string => {
+    if (raw === "timestamp") {
+      return `T+${elapsedSeconds.toFixed(1)}s`;
+    }
+    if (raw === "wordcount") {
+      return String(Math.floor(elapsedSeconds * 2));
+    }
+    if (raw === "wpm") {
+      const wpm =
+        elapsedSeconds > 0.3 ? Math.round(120 + elapsedSeconds * 8) : 0;
+      return String(Math.min(220, wpm));
+    }
+    return raw;
+  };
 
   return (
-    <AbsoluteFill style={containerStyle}>
-      <div style={wrapperStyle}>
-        <AbsoluteFill style={{ opacity: overlayOpacity }}>
-          {/* Thin inset border */}
-          {showFrame ? (
-            <div
-              style={{
-                position: "absolute",
-                top: frameInset,
-                left: frameInset,
-                right: frameInset,
-                bottom: frameInset,
-                border: `1px solid ${frameBorderColor}`,
-                pointerEvents: "none",
-              }}
-            />
-          ) : null}
+    <AbsoluteFill style={{ opacity: overlayOpacity }}>
+      {/* Thin inset border */}
+      {showFrame ? (
+        <div
+          style={{
+            position: "absolute",
+            top: 30,
+            left: 30,
+            right: 30,
+            bottom: 30,
+            border: `1px solid ${frameBorderColor}`,
+            pointerEvents: "none",
+          }}
+        />
+      ) : null}
 
-          {/* Scan line */}
-          {showScanLine ? (
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: 1,
-                backgroundColor: resolvedScanColor,
-                transform: `translateY(${scanY}px)`,
-                pointerEvents: "none",
-              }}
-            />
-          ) : null}
+      {/* Scan line */}
+      {showScanLine ? (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: 1,
+            backgroundColor: scanLineColor,
+            transform: `translateY(${scanY}px)`,
+            pointerEvents: "none",
+          }}
+        />
+      ) : null}
 
-          {/* Corner annotations */}
-          {annotations.map((a, i) => {
-            const displayValue =
-              a.value === "timestamp"
-                ? `T+${elapsedSeconds.toFixed(1)}s`
-                : a.value;
-            return (
-              <div
-                key={i}
-                style={cornerToStyle(a.corner, frameInset + 10)}
-              >
-                <div
-                  style={{
-                    fontFamily: FONT_FAMILIES.jetBrainsMono,
-                    fontSize: annotationFontSize * 0.75,
-                    fontWeight: 400,
-                    color: `${textColor}80`,
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    lineHeight: 1.4,
-                  }}
-                >
-                  {a.label}
-                </div>
-                <div
-                  style={{
-                    fontFamily: FONT_FAMILIES.jetBrainsMono,
-                    fontSize: annotationFontSize,
-                    fontWeight: 500,
-                    color: accentColor,
-                    letterSpacing: "0.02em",
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {displayValue}
-                </div>
-              </div>
-            );
-          })}
-        </AbsoluteFill>
-      </div>
+      {/* Corner annotations */}
+      {annotations.map((a, i) => (
+        <div key={i} style={cornerToStyle(a.corner)}>
+          <div
+            style={{
+              fontFamily: FONT_FAMILIES.jetBrainsMono,
+              fontSize: annotationFontSize * 0.75,
+              fontWeight: 400,
+              color: `${textColor}80`,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              lineHeight: 1.4,
+            }}
+          >
+            {a.label}
+          </div>
+          <div
+            style={{
+              fontFamily: FONT_FAMILIES.jetBrainsMono,
+              fontSize: annotationFontSize,
+              fontWeight: 500,
+              color: accentColor,
+              letterSpacing: "0.02em",
+              lineHeight: 1.2,
+            }}
+          >
+            {resolveValue(a.value)}
+          </div>
+        </div>
+      ))}
     </AbsoluteFill>
   );
 };

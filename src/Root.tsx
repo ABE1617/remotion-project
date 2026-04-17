@@ -76,6 +76,8 @@ import { BlurDissolveTransitionDemo } from "./compositions/BlurDissolveTransitio
 import { GlitchTransitionDemo } from "./compositions/GlitchTransitionDemo";
 import { LightLeakTransitionDemo } from "./compositions/LightLeakTransitionDemo";
 import { FilmBurnTransitionDemo } from "./compositions/FilmBurnTransitionDemo";
+import { ShakeTransitionDemo } from "./compositions/ShakeTransitionDemo";
+import { DollyZoomTransitionDemo } from "./compositions/DollyZoomTransitionDemo";
 import { IlluminateDemo } from "./Testing/Illuminate/IlluminateDemo";
 import { GravityDemo } from "./Testing/Gravity/GravityDemo";
 import { TrackDemo } from "./Testing/Track/TrackDemo";
@@ -679,6 +681,22 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="transition-film-burn"
           component={FilmBurnTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-shake"
+          component={ShakeTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-dolly-zoom"
+          component={DollyZoomTransitionDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}

@@ -24,3 +24,5 @@ export { BlurDissolve, BLUR_DISSOLVE_PEAK_PROGRESS } from "./BlurDissolve";
 export { Glitch, GLITCH_PEAK_PROGRESS } from "./Glitch";
 export { LightLeak, LIGHT_LEAK_PEAK_PROGRESS } from "./LightLeak";
 export { FilmBurn, FILM_BURN_PEAK_PROGRESS } from "./FilmBurn";
+export { Shake, SHAKE_PEAK_PROGRESS } from "./Shake";
+export { DollyZoom, DOLLY_ZOOM_PEAK_PROGRESS } from "./DollyZoom";

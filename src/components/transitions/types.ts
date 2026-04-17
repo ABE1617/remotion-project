@@ -100,3 +100,22 @@ export interface FilmBurnProps extends TransitionProps {
   intensity?: number;
   seed?: number;
 }
+
+export interface ShakeProps extends TransitionProps {
+  // Amplitude tier. Default "medium". "heavy" also adds a brief flash at the
+  // peak — the classic beat-drop look.
+  intensity?: "subtle" | "medium" | "heavy";
+  // Deterministic seed for the pseudo-random jitter pattern. Default 1.
+  seed?: number;
+  // Color of the peak flash (only visible on "heavy"). Default "#FFFFFF".
+  flashColor?: string;
+}
+
+export interface DollyZoomProps extends TransitionProps {
+  // "in" = zoom toward the subject; "out" = pull back. Default "in".
+  direction?: "in" | "out";
+  // Where to pivot the zoom (0–1 each axis). Default center (0.5, 0.5).
+  focalPoint?: { x: number; y: number };
+  // Strength of the vertigo distortion (0–1). Default 0.7.
+  intensity?: number;
+}

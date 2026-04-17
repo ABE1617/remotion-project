@@ -9,7 +9,7 @@ import {
 } from "remotion";
 import type { SpringConfig } from "remotion";
 import type { TikTokPage, TikTokToken } from "../../types/captions";
-import type { TelemetryProps, TelemetryAnnotation } from "./types";
+import type { TelemetryProps } from "./types";
 import { msToFrames } from "../../utils/timing";
 import { FONT_FAMILIES } from "../../utils/fonts";
 import { getCaptionPositionStyle } from "../../utils/captionPosition";
@@ -133,127 +133,6 @@ const TelemetryWord: React.FC<{
   );
 };
 
-/* ─── Scan Line ─── */
-
-const TelemetryScanLine: React.FC<{
-  scanLineColor: string;
-  scanLineCycle: number;
-}> = ({ scanLineColor, scanLineCycle }) => {
-  const frame = useCurrentFrame();
-
-  const scanY = interpolate(
-    frame % scanLineCycle,
-    [0, scanLineCycle],
-    [0, 1920],
-  );
-
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: 1,
-        backgroundColor: scanLineColor,
-        transform: `translateY(${scanY}px)`,
-        pointerEvents: "none",
-      }}
-    />
-  );
-};
-
-/* ─── Corner Annotation ─── */
-
-const TelemetryAnnotationItem: React.FC<{
-  annotation: TelemetryAnnotation;
-  annotationFontSize: number;
-  accentColor: string;
-  textColor: string;
-  pages: TikTokPage[];
-}> = ({ annotation, annotationFontSize, accentColor, textColor, pages }) => {
-  const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-
-  const currentTimeMs = (frame / fps) * 1000;
-
-  // Compute dynamic values
-  let displayValue: string;
-  if (annotation.value === "timestamp") {
-    const seconds = currentTimeMs / 1000;
-    displayValue = `T+${seconds.toFixed(1)}s`;
-  } else if (annotation.value === "wordcount") {
-    let count = 0;
-    for (const page of pages) {
-      for (const token of page.tokens) {
-        if (currentTimeMs >= token.fromMs) count++;
-      }
-    }
-    displayValue = String(count);
-  } else if (annotation.value === "wpm") {
-    const elapsed = currentTimeMs / 1000 / 60; // minutes
-    let count = 0;
-    for (const page of pages) {
-      for (const token of page.tokens) {
-        if (currentTimeMs >= token.fromMs) count++;
-      }
-    }
-    displayValue = elapsed > 0 ? String(Math.round(count / elapsed)) : "0";
-  } else {
-    displayValue = annotation.value;
-  }
-
-  const cornerStyle: React.CSSProperties = { position: "absolute" };
-  switch (annotation.corner) {
-    case "top-left":
-      cornerStyle.top = 40;
-      cornerStyle.left = 40;
-      break;
-    case "top-right":
-      cornerStyle.top = 40;
-      cornerStyle.right = 40;
-      break;
-    case "bottom-left":
-      cornerStyle.bottom = 40;
-      cornerStyle.left = 40;
-      break;
-    case "bottom-right":
-      cornerStyle.bottom = 40;
-      cornerStyle.right = 40;
-      break;
-  }
-
-  return (
-    <div style={cornerStyle}>
-      <div
-        style={{
-          fontFamily: FONT_FAMILIES.jetBrainsMono,
-          fontSize: annotationFontSize * 0.75,
-          fontWeight: 400,
-          color: `${textColor}80`,
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          lineHeight: 1.4,
-        }}
-      >
-        {annotation.label}
-      </div>
-      <div
-        style={{
-          fontFamily: FONT_FAMILIES.jetBrainsMono,
-          fontSize: annotationFontSize,
-          fontWeight: 500,
-          color: accentColor,
-          letterSpacing: "0.02em",
-          lineHeight: 1.2,
-        }}
-      >
-        {displayValue}
-      </div>
-    </div>
-  );
-};
-
 /* ─── Page ─── */
 
 const TelemetryPage: React.FC<{
@@ -335,13 +214,6 @@ const TelemetryPage: React.FC<{
 
 /* ─── Main Component ─── */
 
-const DEFAULT_ANNOTATIONS: TelemetryAnnotation[] = [
-  { label: "ELAPSED", value: "timestamp", corner: "top-left" },
-  { label: "WORDS", value: "wordcount", corner: "top-right" },
-  { label: "RATE", value: "wpm", corner: "bottom-left" },
-  { label: "SIG", value: "ACTIVE", corner: "bottom-right" },
-];
-
 export const Telemetry: React.FC<TelemetryProps> = ({
   pages,
   keywords = [],
@@ -349,19 +221,12 @@ export const Telemetry: React.FC<TelemetryProps> = ({
   accentColor = "#C5432E",
   baseFontSize = 64,
   baseFontWeight = 500,
-  annotationFontSize = 24,
   textTransform = "uppercase",
   position = "bottom",
   letterSpacing = "0.04em",
   maxWordsPerLine = 4,
   lineGap = 10,
   wordGap = 12,
-  showScanLine = true,
-  scanLineColor = "rgba(197,67,46,0.15)",
-  scanLineCycle = 90,
-  annotations = DEFAULT_ANNOTATIONS,
-  showFrame = true,
-  frameBorderColor = "rgba(240,238,233,0.08)",
   textShadow = "0 1px 6px rgba(0,0,0,0.4)",
 }) => {
   const { fps } = useVideoConfig();
@@ -370,41 +235,6 @@ export const Telemetry: React.FC<TelemetryProps> = ({
 
   return (
     <AbsoluteFill>
-      {/* Thin border frame */}
-      {showFrame && (
-        <div
-          style={{
-            position: "absolute",
-            top: 30,
-            left: 30,
-            right: 30,
-            bottom: 30,
-            border: `1px solid ${frameBorderColor}`,
-            pointerEvents: "none",
-          }}
-        />
-      )}
-
-      {/* Scan line */}
-      {showScanLine && (
-        <TelemetryScanLine
-          scanLineColor={scanLineColor}
-          scanLineCycle={scanLineCycle}
-        />
-      )}
-
-      {/* Corner annotations */}
-      {annotations.map((annotation, i) => (
-        <TelemetryAnnotationItem
-          key={i}
-          annotation={annotation}
-          annotationFontSize={annotationFontSize}
-          accentColor={accentColor}
-          textColor={textColor}
-          pages={pages}
-        />
-      ))}
-
       {/* Caption pages */}
       {pages.map((page, pageIndex) => {
         const startFrame = msToFrames(page.startMs, fps);

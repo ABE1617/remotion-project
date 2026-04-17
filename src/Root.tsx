@@ -112,6 +112,7 @@ import { ChatThreadDemo } from "./compositions/ChatThreadDemo";
 import { TornPaperDemo } from "./compositions/TornPaperDemo";
 import { StickyNotesDemo } from "./compositions/StickyNotesDemo";
 import { ToggleDemo } from "./compositions/ToggleDemo";
+import { RecordingFrameDemo } from "./compositions/RecordingFrameDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -903,6 +904,14 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="mg-toggle"
           component={ToggleDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
+        />
+        <Composition
+          id="mg-recording-frame"
+          component={RecordingFrameDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}

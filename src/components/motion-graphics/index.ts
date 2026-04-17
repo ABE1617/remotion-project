@@ -50,3 +50,8 @@ export { StickyNotes } from "./StickyNotes";
 export type { StickyNotesProps, StickyNote } from "./StickyNotes";
 export { Toggle } from "./Toggle";
 export type { ToggleProps } from "./Toggle";
+export { RecordingFrame } from "./RecordingFrame";
+export type {
+  RecordingFrameProps,
+  RecordingFrameAnnotation,
+} from "./RecordingFrame";

@@ -728,14 +728,6 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={150}
         />
         <Composition
-          id="mg-annotation-arrow"
-          component={AnnotationArrowDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={150}
-        />
-        <Composition
           id="mg-broll-frame"
           component={BRollFrameDemo}
           width={WIDTH}
@@ -775,14 +767,7 @@ export const RemotionRoot: React.FC = () => {
           fps={FPS}
           durationInFrames={210}
         />
-        <Composition
-          id="mg-comparison-split"
-          component={ComparisonSplitDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={180}
-        />
+
         <Composition
           id="mg-chart-reveal"
           component={ChartRevealDemo}

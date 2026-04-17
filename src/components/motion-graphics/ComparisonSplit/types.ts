@@ -37,4 +37,7 @@ export interface ComparisonSplitProps extends MGTimingProps {
   theme?: "dark" | "light";
   // Divider color override. Defaults to accentColor.
   dividerColor?: string;
+  // Hero number size for `type: "stat"` sides. Affix ($, %) renders at
+  // ~60% of this. Default 148. Shrink for long values that overflow.
+  statFontSize?: number;
 }

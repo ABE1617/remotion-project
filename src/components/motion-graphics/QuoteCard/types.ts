@@ -21,6 +21,6 @@ export interface QuoteCardProps extends MGTimingProps, MGPositionProps {
   quoteFont?: string;
   // Default 64. Callers can shrink for longer quotes.
   quoteFontSize?: number;
-  // Card width in pixels. Default 918 (≈85% of a 1080-wide frame).
+  // Card width in pixels. Default 918 (~85% of 1080 frame).
   width?: number;
 }

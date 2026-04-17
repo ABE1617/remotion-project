@@ -25,48 +25,14 @@ import type { ProgressBarProps } from "./types";
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 
+const DEFAULT_TEXT_SHADOW_LARGE =
+  "0 4px 20px rgba(0,0,0,0.65), 0 2px 4px rgba(0,0,0,0.5)";
+const DEFAULT_TEXT_SHADOW_SMALL =
+  "0 2px 10px rgba(0,0,0,0.75), 0 1px 2px rgba(0,0,0,0.55)";
+
 const FILL_START = 8;
 const FILL_END = 34;
 const PULSE_END = 40;
-
-// Theme palettes — text, track, fill, and accent defaults. Individual color
-// props on the component override these.
-const THEMES = {
-  dark: {
-    fillColor: "#FFFFFF",
-    trackColor: "rgba(255,255,255,0.14)",
-    accentColor: "#D4A12A",
-    heroText: "#FFFFFF",
-    totalText: "rgba(255,255,255,0.55)",
-    tickReached: "#FFFFFF",
-    tickUnreached: "rgba(255,255,255,0.3)",
-    labelText: "#FFFFFF",
-    labelDim: "rgba(255,255,255,0.5)",
-    shadowLarge:
-      "0 4px 20px rgba(0,0,0,0.65), 0 2px 4px rgba(0,0,0,0.5)",
-    shadowSmall:
-      "0 2px 10px rgba(0,0,0,0.75), 0 1px 2px rgba(0,0,0,0.55)",
-    trackInset: "inset 0 1px 2px rgba(0,0,0,0.35)",
-  },
-  light: {
-    fillColor: "#16120E",
-    trackColor: "rgba(22,18,14,0.12)",
-    accentColor: "#C8551F",
-    heroText: "#16120E",
-    totalText: "rgba(22,18,14,0.4)",
-    tickReached: "#16120E",
-    tickUnreached: "rgba(22,18,14,0.3)",
-    labelText: "#16120E",
-    labelDim: "rgba(22,18,14,0.4)",
-    // Light-theme shadows use a subtle white halo to separate dark text from
-    // dark regions of the video without casting a hard dark drop.
-    shadowLarge:
-      "0 2px 12px rgba(255,255,255,0.55), 0 0 4px rgba(255,255,255,0.4)",
-    shadowSmall:
-      "0 1px 6px rgba(255,255,255,0.5), 0 0 2px rgba(255,255,255,0.35)",
-    trackInset: "inset 0 1px 2px rgba(0,0,0,0.18)",
-  },
-} as const;
 
 export const ProgressBar: React.FC<ProgressBarProps> = (props) => {
   const {
@@ -77,21 +43,18 @@ export const ProgressBar: React.FC<ProgressBarProps> = (props) => {
     label,
     width = 860,
     trackHeight = 18,
-    theme = "dark",
-    fillColor,
-    accentColor,
-    trackColor,
+    fillColor = "#FFFFFF",
+    accentColor = "#D4A12A",
+    trackColor = "rgba(255,255,255,0.14)",
     milestones = [],
     formatValue,
+    textShadowLarge = DEFAULT_TEXT_SHADOW_LARGE,
+    textShadowSmall = DEFAULT_TEXT_SHADOW_SMALL,
     anchor,
     offsetX,
     offsetY,
     scale,
   } = props;
-  const palette = THEMES[theme];
-  const resolvedFillColor = fillColor ?? palette.fillColor;
-  const resolvedAccentColor = accentColor ?? palette.accentColor;
-  const resolvedTrackColor = trackColor ?? palette.trackColor;
   const { containerStyle, wrapperStyle } = resolveMGPosition({
     anchor,
     offsetX,
@@ -189,12 +152,12 @@ export const ProgressBar: React.FC<ProgressBarProps> = (props) => {
               fontFamily: FONT_FAMILIES.inter,
               fontSize: 24,
               fontWeight: 600,
-              color: resolvedAccentColor,
+              color: accentColor,
               letterSpacing: "0.28em",
               textTransform: "uppercase",
               lineHeight: 1,
               opacity: eyebrowFadeIn,
-              textShadow: palette.shadowSmall,
+              textShadow: textShadowSmall,
               whiteSpace: "nowrap",
               marginBottom: 22,
             }}
@@ -211,10 +174,10 @@ export const ProgressBar: React.FC<ProgressBarProps> = (props) => {
             alignItems: "baseline",
             justifyContent: "center",
             opacity: heroFadeIn,
-            color: palette.heroText,
+            color: "#FFFFFF",
             lineHeight: 0.9,
             fontVariantNumeric: "tabular-nums",
-            textShadow: palette.shadowLarge,
+            textShadow: textShadowLarge,
             whiteSpace: "nowrap",
           }}
         >
@@ -237,7 +200,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = (props) => {
                 fontSize: 60,
                 fontWeight: 400,
                 letterSpacing: "-0.01em",
-                color: palette.totalText,
+                color: "rgba(255,255,255,0.55)",
                 marginLeft: 18,
                 lineHeight: 0.9,
                 fontVariantNumeric: "tabular-nums",
@@ -253,7 +216,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = (props) => {
           style={{
             width: 48,
             height: 2,
-            backgroundColor: resolvedAccentColor,
+            backgroundColor: accentColor,
             marginTop: 22,
             marginBottom: 24,
             opacity: heroFadeIn,
@@ -277,9 +240,9 @@ export const ProgressBar: React.FC<ProgressBarProps> = (props) => {
             style={{
               position: "absolute",
               inset: 0,
-              backgroundColor: resolvedTrackColor,
+              backgroundColor: trackColor,
               borderRadius: radius,
-              boxShadow: palette.trackInset,
+              boxShadow: "inset 0 1px 2px rgba(0,0,0,0.35)",
             }}
           />
 
@@ -291,11 +254,11 @@ export const ProgressBar: React.FC<ProgressBarProps> = (props) => {
               top: 0,
               height: trackHeight,
               width: fillWidth,
-              backgroundColor: resolvedFillColor,
+              backgroundColor: fillColor,
               borderRadius: radius,
               transform: `scaleY(${fillScaleY})`,
               transformOrigin: "center",
-              boxShadow: `0 4px 12px ${withAlpha(resolvedFillColor, 0.35)}`,
+              boxShadow: `0 4px 12px ${withAlpha(fillColor, 0.35)}`,
             }}
           />
 
@@ -313,8 +276,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = (props) => {
                     width: 2,
                     height: trackHeight + 8,
                     backgroundColor: reached
-                      ? palette.tickReached
-                      : palette.tickUnreached,
+                      ? "#FFFFFF"
+                      : "rgba(255,255,255,0.3)",
                     borderRadius: 1,
                   }}
                 />
@@ -328,11 +291,13 @@ export const ProgressBar: React.FC<ProgressBarProps> = (props) => {
                       fontFamily: FONT_FAMILIES.inter,
                       fontSize: 18,
                       fontWeight: 600,
-                      color: reached ? palette.labelText : palette.labelDim,
+                      color: reached
+                        ? "#FFFFFF"
+                        : "rgba(255,255,255,0.5)",
                       letterSpacing: "0.2em",
                       textTransform: "uppercase",
                       whiteSpace: "nowrap",
-                      textShadow: palette.shadowSmall,
+                      textShadow: textShadowSmall,
                     }}
                   >
                     {m.label}

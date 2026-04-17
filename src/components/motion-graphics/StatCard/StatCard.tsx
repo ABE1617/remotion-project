@@ -34,21 +34,11 @@ const RULE_TO_LABEL = 18;
 // Ease-out cubic — slow, weighty landing for the count-up.
 const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
 
-// Theme palettes — text color + drop shadow tuned to each video background
-// class. Dark uses strong black shadow for light text; light uses a soft
-// white halo to separate dark text from dark video regions.
-const THEMES = {
-  dark: {
-    textColor: "#FFFFFF",
-    textShadow:
-      "0 2px 8px rgba(0,0,0,0.85), 0 12px 40px rgba(0,0,0,0.6)",
-  },
-  light: {
-    textColor: "#16120E",
-    textShadow:
-      "0 2px 10px rgba(255,255,255,0.6), 0 0 4px rgba(255,255,255,0.4)",
-  },
-} as const;
+// Drop shadow stack — makes the text readable over any video background
+// without a box. Two shadows: a close dark one for definition, a larger
+// diffused one for atmospheric lift. Overridable via the `textShadow` prop.
+const DEFAULT_TEXT_SHADOW =
+  "0 2px 8px rgba(0,0,0,0.85), 0 12px 40px rgba(0,0,0,0.6)";
 
 export const StatCard: React.FC<StatCardProps> = ({
   startMs,
@@ -61,19 +51,15 @@ export const StatCard: React.FC<StatCardProps> = ({
   suffix,
   decimals,
   label,
-  theme = "dark",
-  numberColor,
-  labelColor,
+  numberColor = "#FFFFFF",
+  labelColor = "#FFFFFF",
   accentColor = "#C8551F",
+  textShadow = DEFAULT_TEXT_SHADOW,
   anchor,
   offsetX,
   offsetY,
   scale,
 }) => {
-  const palette = THEMES[theme];
-  const resolvedNumberColor = numberColor ?? palette.textColor;
-  const resolvedLabelColor = labelColor ?? palette.textColor;
-  const TEXT_SHADOW = palette.textShadow;
   const { containerStyle, wrapperStyle } = resolveMGPosition({
     anchor,
     offsetX,
@@ -163,9 +149,9 @@ export const StatCard: React.FC<StatCardProps> = ({
             transformOrigin: "center",
             opacity: numberFadeIn,
             fontVariantNumeric: "tabular-nums",
-            color: resolvedNumberColor,
+            color: numberColor,
             lineHeight: 1,
-            textShadow: TEXT_SHADOW,
+            textShadow,
           }}
         >
           {prefix ? (
@@ -236,14 +222,14 @@ export const StatCard: React.FC<StatCardProps> = ({
             fontFamily: FONT_FAMILIES.inter,
             fontSize: LABEL_SIZE,
             fontWeight: 600,
-            color: resolvedLabelColor,
+            color: labelColor,
             letterSpacing: "0.22em",
             textTransform: "uppercase",
             textAlign: "center",
             lineHeight: 1.2,
             opacity: labelFadeIn,
             transform: `translateY(${labelY}px)`,
-            textShadow: TEXT_SHADOW,
+            textShadow,
           }}
         >
           {label}

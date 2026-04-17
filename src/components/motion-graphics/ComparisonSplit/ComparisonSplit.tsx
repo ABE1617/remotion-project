@@ -82,6 +82,7 @@ interface SideContentProps {
   palette: Palette;
   accentColor: string;
   localFrame: number;
+  statFontSize: number;
 }
 
 const SideContent: React.FC<SideContentProps> = ({
@@ -89,6 +90,7 @@ const SideContent: React.FC<SideContentProps> = ({
   palette,
   accentColor,
   localFrame,
+  statFontSize,
 }) => {
   if (content.type === "image") {
     return (
@@ -211,7 +213,7 @@ const SideContent: React.FC<SideContentProps> = ({
           <span
             style={{
               fontFamily: FONT_FAMILIES.anton,
-              fontSize: 88,
+              fontSize: statFontSize * 0.6,
               fontWeight: 400,
               letterSpacing: "-0.02em",
               lineHeight: 1,
@@ -226,7 +228,7 @@ const SideContent: React.FC<SideContentProps> = ({
         <span
           style={{
             fontFamily: FONT_FAMILIES.anton,
-            fontSize: 148,
+            fontSize: statFontSize,
             fontWeight: 400,
             letterSpacing: "-0.02em",
             lineHeight: 1,
@@ -239,7 +241,7 @@ const SideContent: React.FC<SideContentProps> = ({
           <span
             style={{
               fontFamily: FONT_FAMILIES.anton,
-              fontSize: 88,
+              fontSize: statFontSize * 0.6,
               fontWeight: 400,
               letterSpacing: "-0.02em",
               lineHeight: 1,
@@ -291,6 +293,7 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
   accentColor = "#C8551F",
   theme = "dark",
   dividerColor,
+  statFontSize = 148,
 }) => {
   const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
@@ -480,6 +483,7 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
             palette={palette}
             accentColor={accentColor}
             localFrame={localFrame}
+            statFontSize={statFontSize}
           />
         </div>
       </div>
@@ -506,6 +510,7 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
             palette={palette}
             accentColor={accentColor}
             localFrame={localFrame}
+            statFontSize={statFontSize}
           />
         </div>
       </div>

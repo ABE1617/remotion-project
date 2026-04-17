@@ -12,18 +12,21 @@ interface ProgressBarBase extends MGTimingProps, MGPositionProps {
   label?: string;
   width?: number;
   trackHeight?: number;
-  // "dark" (default) → white fill on translucent-white track, cream-family
-  // text; "light" → ink fill on translucent-ink track for bright footage.
-  theme?: "dark" | "light";
-  // Color of the progress fill itself. Defaults to the theme's fillColor.
+  // Color of the progress fill itself. Default "#FFFFFF" — white reads on
+  // any footage and stays out of the way of brand color elsewhere.
   fillColor?: string;
-  // Accent for the eyebrow label + hairline rule. Defaults to the theme's
-  // accentColor (gold on dark, rust on light).
+  // Accent for the eyebrow label + hairline rule. Default "#D4A12A"
+  // (warm gold — reads as "money/wealth" on revenue-goal trackers).
   accentColor?: string;
   trackColor?: string;
   milestones?: ProgressBarMilestone[];
   // Override the right-side counter text (receives current numeric value during count-up).
   formatValue?: (current: number) => string;
+  // Override the drop shadow used on the large hero value. Pass "" to
+  // disable. Default is a two-stop shadow tuned for video backgrounds.
+  textShadowLarge?: string;
+  // Override the drop shadow used on small text (eyebrow, milestone labels).
+  textShadowSmall?: string;
 }
 
 export interface ProgressBarValueProps extends ProgressBarBase {

@@ -119,3 +119,49 @@ export interface DollyZoomProps extends TransitionProps {
   // Strength of the vertigo distortion (0–1). Default 0.7.
   intensity?: number;
 }
+
+export interface InversionProps extends TransitionProps {
+  // Width of the peak in progress units (how long the invert lasts). Default 0.1.
+  peakWidth?: number;
+}
+
+export interface PixelateProps extends TransitionProps {
+  // Maximum block size in pixels at the peak. Default 60.
+  peakBlockSize?: number;
+}
+
+export interface IrisProps extends TransitionProps {
+  // "in" = circle grows from center; "out" = circle shrinks from full.
+  // Default "in".
+  direction?: "in" | "out";
+  // 0–1 normalized focal point. Default (0.5, 0.5).
+  focalPoint?: { x: number; y: number };
+  // Thin accent ring drawn at the iris edge. Default true.
+  accentRing?: boolean;
+  accentColor?: string;
+}
+
+export interface ScanlineTearProps extends TransitionProps {
+  // Number of horizontal displacement bands. Default 10.
+  bands?: number;
+  // Maximum horizontal displacement at peak (pixels). Default 180.
+  peakDisplacement?: number;
+  seed?: number;
+}
+
+export interface AnamorphicStreakProps extends TransitionProps {
+  // Streak color. Default iMessage-blue cinematic flare "#6AA8FF".
+  color?: string;
+  // Streak intensity (0–1). Default 0.9.
+  intensity?: number;
+}
+
+export interface PaperTearProps extends TransitionProps {
+  // "left" = tear sweeps from right → left; "right" = reverse. Default "right".
+  direction?: "left" | "right";
+  // How jagged the tear edge is (0–1). Default 0.6.
+  jaggedness?: number;
+  // Paper tint behind the tear (subtle). Default "#F2E9D6" (bone).
+  paperColor?: string;
+  seed?: number;
+}

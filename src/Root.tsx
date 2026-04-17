@@ -78,6 +78,12 @@ import { LightLeakTransitionDemo } from "./compositions/LightLeakTransitionDemo"
 import { FilmBurnTransitionDemo } from "./compositions/FilmBurnTransitionDemo";
 import { ShakeTransitionDemo } from "./compositions/ShakeTransitionDemo";
 import { DollyZoomTransitionDemo } from "./compositions/DollyZoomTransitionDemo";
+import { InversionTransitionDemo } from "./compositions/InversionTransitionDemo";
+import { PixelateTransitionDemo } from "./compositions/PixelateTransitionDemo";
+import { IrisTransitionDemo } from "./compositions/IrisTransitionDemo";
+import { ScanlineTearTransitionDemo } from "./compositions/ScanlineTearTransitionDemo";
+import { AnamorphicStreakTransitionDemo } from "./compositions/AnamorphicStreakTransitionDemo";
+import { PaperTearTransitionDemo } from "./compositions/PaperTearTransitionDemo";
 import { IlluminateDemo } from "./Testing/Illuminate/IlluminateDemo";
 import { GravityDemo } from "./Testing/Gravity/GravityDemo";
 import { TrackDemo } from "./Testing/Track/TrackDemo";
@@ -697,6 +703,54 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="transition-dolly-zoom"
           component={DollyZoomTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-inversion"
+          component={InversionTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-pixelate"
+          component={PixelateTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-iris"
+          component={IrisTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-scanline-tear"
+          component={ScanlineTearTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-anamorphic-streak"
+          component={AnamorphicStreakTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-paper-tear"
+          component={PaperTearTransitionDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}

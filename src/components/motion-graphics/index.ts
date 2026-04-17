@@ -38,8 +38,6 @@ export type {
   ProgressBarPercentProps,
   ProgressBarMilestone,
 } from "./ProgressBar";
-export { TypingIndicator } from "./TypingIndicator";
-export type { TypingIndicatorProps } from "./TypingIndicator";
 export { ChatThread } from "./ChatThread";
 export type {
   ChatThreadProps,

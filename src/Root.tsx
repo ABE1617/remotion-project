@@ -99,7 +99,6 @@ import { ComparisonSplitDemo } from "./compositions/ComparisonSplitDemo";
 import { ChartRevealDemo } from "./compositions/ChartRevealDemo";
 import { SpeechBubbleDemo } from "./compositions/SpeechBubbleDemo";
 import { ProgressBarDemo } from "./compositions/ProgressBarDemo";
-import { TypingIndicatorDemo } from "./compositions/TypingIndicatorDemo";
 import { ChatThreadDemo } from "./compositions/ChatThreadDemo";
 
 // Video config constants
@@ -803,14 +802,6 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="mg-progress-bar"
           component={ProgressBarDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={180}
-        />
-        <Composition
-          id="mg-typing-indicator"
-          component={TypingIndicatorDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}

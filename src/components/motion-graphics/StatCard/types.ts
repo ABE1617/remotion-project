@@ -15,11 +15,13 @@ export interface StatCardProps extends MGTimingProps, MGPositionProps {
   decimals?: number;
   // Short descriptive label below the number (e.g. "IN 90 DAYS").
   label: string;
-  // Number color. Default "#FFFFFF" — max readability on any video.
+  // "dark" (default) → white text + rust accent for dark video backgrounds;
+  // "light" → ink text + rust accent for bright video backgrounds.
+  theme?: "dark" | "light";
+  // Number color override. Defaults to the theme's text color.
   numberColor?: string;
-  // Label color. Default "#FFFFFF" — size differential carries the hierarchy.
+  // Label color override. Defaults to the theme's text color.
   labelColor?: string;
-  // Thin accent line drawn between number and label (ties the component to
-  // the rest of the kit). Default "#C8551F" (rust).
+  // Thin accent line drawn between number and label. Default "#C8551F" (rust).
   accentColor?: string;
 }

@@ -34,8 +34,13 @@ export interface ChartRevealProps extends MGTimingProps, MGPositionProps {
   // Overall chart size. Chart centers on the frame.
   width?: number;
   height?: number;
+  // "dark" (default) — light text + drop shadows for dark video backgrounds.
+  // "light" — ink text + soft white halos for bright backgrounds.
+  theme?: "dark" | "light";
   // Line / bar color. Default "#C8551F" (rust).
   accentColor?: string;
+  // Color for the peak bar / peak line dot. Defaults to the theme's text color.
+  peakColor?: string;
   // Optional peak callout — scales in last near the highlighted point.
   highlight?: ChartHighlight;
 }

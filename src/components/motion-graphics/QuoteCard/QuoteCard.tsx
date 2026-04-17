@@ -33,7 +33,6 @@ import type { QuoteCardProps } from "./types";
 
 const CARD_PADDING_X = 96;
 const CARD_PADDING_Y = 80;
-const CARD_WIDTH = 918; // ~85% of 1080
 const CARD_RADIUS = 8;
 const GIANT_MARK_SIZE = 340;
 const ATTRIBUTION_GAP = 32;
@@ -78,6 +77,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
   accentColor,
   quoteFont,
   quoteFontSize = 64,
+  width = 918,
   anchor,
   offsetX,
   offsetY,
@@ -180,7 +180,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
       <div
         style={{
           position: "relative",
-          width: CARD_WIDTH,
+          width,
           backgroundColor: cardColor ?? palette.cardFallback,
           backgroundImage: cardColor ? undefined : palette.cardGradient,
           borderRadius: CARD_RADIUS,

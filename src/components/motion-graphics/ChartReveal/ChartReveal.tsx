@@ -34,9 +34,32 @@ import type { ChartRevealProps, DataPoint } from "./types";
 const TITLE_GAP = 32;
 const VALUE_LABEL_GAP = 14;
 const CATEGORY_LABEL_GAP = 16;
-const TEXT_SHADOW =
-  "0 2px 8px rgba(0,0,0,0.85), 0 10px 28px rgba(0,0,0,0.5)";
 const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+
+// Theme palettes — text colors, peak fill, and drop shadows tuned per
+// background class. Defaults to dark.
+const THEMES = {
+  dark: {
+    titleColor: "#FFFFFF",
+    valueLabelColor: "#F2E9D6",
+    valueLabelPeakColor: "#FFFFFF",
+    categoryLabelColor: "#B8B0A1",
+    peakColor: "#FFFFFF",
+    lineDotStroke: "#FFFFFF",
+    textShadow:
+      "0 2px 8px rgba(0,0,0,0.85), 0 10px 28px rgba(0,0,0,0.5)",
+  },
+  light: {
+    titleColor: "#16120E",
+    valueLabelColor: "#2B2520",
+    valueLabelPeakColor: "#16120E",
+    categoryLabelColor: "#5A4E3D",
+    peakColor: "#16120E",
+    lineDotStroke: "#16120E",
+    textShadow:
+      "0 2px 10px rgba(255,255,255,0.55), 0 0 4px rgba(255,255,255,0.4)",
+  },
+} as const;
 
 // ---------------------------------------------------------------------------
 // Geometry helpers (line chart only — Catmull-Rom → cubic Bezier smoothing)
@@ -166,12 +189,17 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
   width = 900,
   height = 560,
   accentColor = "#C8551F",
+  peakColor,
+  theme = "dark",
   highlight,
   anchor,
   offsetX,
   offsetY,
   scale,
 }) => {
+  const palette = THEMES[theme];
+  const resolvedPeakColor = peakColor ?? palette.peakColor;
+  const TEXT_SHADOW = palette.textShadow;
   const { containerStyle, wrapperStyle } = resolveMGPosition({
     anchor,
     offsetX,
@@ -305,7 +333,7 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
               fontFamily: FONT_FAMILIES.anton,
               fontSize: 64,
               fontWeight: 400,
-              color: "#FFFFFF",
+              color: palette.titleColor,
               letterSpacing: "0.01em",
               textTransform: "uppercase",
               lineHeight: 1,
@@ -348,7 +376,7 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
                       height={full}
                       rx={10}
                       ry={10}
-                      fill={isPeak ? "#FFFFFF" : accentColor}
+                      fill={isPeak ? resolvedPeakColor : accentColor}
                       style={{
                         transform: `scaleY(${sp})`,
                         transformOrigin: `${(x + barWidth / 2).toFixed(2)}px ${height}px`,
@@ -390,8 +418,8 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
                       cx={pt.x}
                       cy={pt.y}
                       r={isPeak ? 14 : 9}
-                      fill={isPeak ? "#FFFFFF" : accentColor}
-                      stroke={isPeak ? accentColor : "#FFFFFF"}
+                      fill={isPeak ? resolvedPeakColor : accentColor}
+                      stroke={isPeak ? accentColor : palette.lineDotStroke}
                       strokeWidth={isPeak ? 5 : 0}
                       style={{
                         transform: `scale(${markerScale})`,
@@ -431,7 +459,9 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
                       fontFamily: FONT_FAMILIES.anton,
                       fontSize: isPeak ? 48 : 36,
                       fontWeight: 400,
-                      color: isPeak ? "#FFFFFF" : "#F2E9D6",
+                      color: isPeak
+                        ? palette.valueLabelPeakColor
+                        : palette.valueLabelColor,
                       letterSpacing: "-0.01em",
                       lineHeight: 1,
                       whiteSpace: "nowrap",
@@ -459,7 +489,7 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
                 fontFamily: FONT_FAMILIES.anton,
                 fontSize: 72,
                 fontWeight: 400,
-                color: "#FFFFFF",
+                color: palette.titleColor,
                 letterSpacing: "-0.01em",
                 lineHeight: 1,
                 whiteSpace: "nowrap",
@@ -496,7 +526,7 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
                       fontFamily: FONT_FAMILIES.inter,
                       fontSize: 22,
                       fontWeight: 600,
-                      color: "#B8B0A1",
+                      color: palette.categoryLabelColor,
                       letterSpacing: "0.18em",
                       textTransform: "uppercase",
                       lineHeight: 1,
@@ -520,7 +550,7 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
                   fontFamily: FONT_FAMILIES.inter,
                   fontSize: 22,
                   fontWeight: 600,
-                  color: "#B8B0A1",
+                  color: palette.categoryLabelColor,
                   letterSpacing: "0.18em",
                   textTransform: "uppercase",
                   lineHeight: 1,
@@ -537,7 +567,7 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
                   fontFamily: FONT_FAMILIES.inter,
                   fontSize: 22,
                   fontWeight: 600,
-                  color: "#B8B0A1",
+                  color: palette.categoryLabelColor,
                   letterSpacing: "0.18em",
                   textTransform: "uppercase",
                   lineHeight: 1,

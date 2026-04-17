@@ -113,6 +113,10 @@ import { TornPaperDemo } from "./compositions/TornPaperDemo";
 import { StickyNotesDemo } from "./compositions/StickyNotesDemo";
 import { ToggleDemo } from "./compositions/ToggleDemo";
 import { RecordingFrameDemo } from "./compositions/RecordingFrameDemo";
+import {
+  MGShowcaseDemo,
+  MG_SHOWCASE_TOTAL_FRAMES,
+} from "./compositions/MGShowcaseDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -916,6 +920,14 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={180}
+        />
+        <Composition
+          id="mg-showcase"
+          component={MGShowcaseDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={MG_SHOWCASE_TOTAL_FRAMES}
         />
       </Folder>
       <Folder name="Color-Effects">

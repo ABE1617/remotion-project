@@ -27,11 +27,11 @@ export { FilmBurn, FILM_BURN_PEAK_PROGRESS } from "./FilmBurn";
 export { Shake, SHAKE_PEAK_PROGRESS } from "./Shake";
 export { DollyZoom, DOLLY_ZOOM_PEAK_PROGRESS } from "./DollyZoom";
 export { Inversion, INVERSION_PEAK_PROGRESS } from "./Inversion";
-export { Pixelate, PIXELATE_PEAK_PROGRESS } from "./Pixelate";
 export { Iris, IRIS_PEAK_PROGRESS } from "./Iris";
-export { ScanlineTear, SCANLINE_TEAR_PEAK_PROGRESS } from "./ScanlineTear";
 export {
   AnamorphicStreak,
   ANAMORPHIC_STREAK_PEAK_PROGRESS,
 } from "./AnamorphicStreak";
-export { PaperTear, PAPER_TEAR_PEAK_PROGRESS } from "./PaperTear";
+export { PanelStack, PANEL_STACK_PEAK_PROGRESS } from "./PanelStack";
+export { StepPush, STEP_PUSH_PEAK_PROGRESS } from "./StepPush";
+export { CardLift, CARD_LIFT_PEAK_PROGRESS } from "./CardLift";

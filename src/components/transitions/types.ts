@@ -125,11 +125,6 @@ export interface InversionProps extends TransitionProps {
   peakWidth?: number;
 }
 
-export interface PixelateProps extends TransitionProps {
-  // Maximum block size in pixels at the peak. Default 60.
-  peakBlockSize?: number;
-}
-
 export interface IrisProps extends TransitionProps {
   // "in" = circle grows from center; "out" = circle shrinks from full.
   // Default "in".
@@ -141,14 +136,6 @@ export interface IrisProps extends TransitionProps {
   accentColor?: string;
 }
 
-export interface ScanlineTearProps extends TransitionProps {
-  // Number of horizontal displacement bands. Default 10.
-  bands?: number;
-  // Maximum horizontal displacement at peak (pixels). Default 180.
-  peakDisplacement?: number;
-  seed?: number;
-}
-
 export interface AnamorphicStreakProps extends TransitionProps {
   // Streak color. Default iMessage-blue cinematic flare "#6AA8FF".
   color?: string;
@@ -156,12 +143,27 @@ export interface AnamorphicStreakProps extends TransitionProps {
   intensity?: number;
 }
 
-export interface PaperTearProps extends TransitionProps {
-  // "left" = tear sweeps from right → left; "right" = reverse. Default "right".
-  direction?: "left" | "right";
-  // How jagged the tear edge is (0–1). Default 0.6.
-  jaggedness?: number;
-  // Paper tint behind the tear (subtle). Default "#F2E9D6" (bone).
-  paperColor?: string;
-  seed?: number;
+export interface PanelStackProps extends TransitionProps {
+  // Where the outgoing clip tilts away to. Default "back" (scales + tilts
+  // into the stack, iOS app-switcher style). "side" slides it off to the
+  // left with a subtle rotation instead.
+  tiltDirection?: "back" | "side";
+  // Dark background that shows behind the stack. Default "#000".
+  backgroundColor?: string;
+}
+
+export interface StepPushProps extends TransitionProps {
+  // Which direction the panels push. Default "left" (clipA exits left,
+  // clipB enters from right — standard keynote forward step).
+  direction?: "left" | "right" | "up" | "down";
+  // Small separator shadow between the two panels. Default true.
+  separatorShadow?: boolean;
+}
+
+export interface CardLiftProps extends TransitionProps {
+  // How far up the card lifts as it fades (percentage of frame height).
+  // Default 10.
+  liftAmount?: number;
+  // Scale the lifting card shrinks to. Default 0.9.
+  liftScale?: number;
 }

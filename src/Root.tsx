@@ -79,11 +79,11 @@ import { FilmBurnTransitionDemo } from "./compositions/FilmBurnTransitionDemo";
 import { ShakeTransitionDemo } from "./compositions/ShakeTransitionDemo";
 import { DollyZoomTransitionDemo } from "./compositions/DollyZoomTransitionDemo";
 import { InversionTransitionDemo } from "./compositions/InversionTransitionDemo";
-import { PixelateTransitionDemo } from "./compositions/PixelateTransitionDemo";
 import { IrisTransitionDemo } from "./compositions/IrisTransitionDemo";
-import { ScanlineTearTransitionDemo } from "./compositions/ScanlineTearTransitionDemo";
 import { AnamorphicStreakTransitionDemo } from "./compositions/AnamorphicStreakTransitionDemo";
-import { PaperTearTransitionDemo } from "./compositions/PaperTearTransitionDemo";
+import { PanelStackTransitionDemo } from "./compositions/PanelStackTransitionDemo";
+import { StepPushTransitionDemo } from "./compositions/StepPushTransitionDemo";
+import { CardLiftTransitionDemo } from "./compositions/CardLiftTransitionDemo";
 import { IlluminateDemo } from "./Testing/Illuminate/IlluminateDemo";
 import { GravityDemo } from "./Testing/Gravity/GravityDemo";
 import { TrackDemo } from "./Testing/Track/TrackDemo";
@@ -717,24 +717,8 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={300}
         />
         <Composition
-          id="transition-pixelate"
-          component={PixelateTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
           id="transition-iris"
           component={IrisTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-scanline-tear"
-          component={ScanlineTearTransitionDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
@@ -749,8 +733,24 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={300}
         />
         <Composition
-          id="transition-paper-tear"
-          component={PaperTearTransitionDemo}
+          id="transition-panel-stack"
+          component={PanelStackTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-step-push"
+          component={StepPushTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-card-lift"
+          component={CardLiftTransitionDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}

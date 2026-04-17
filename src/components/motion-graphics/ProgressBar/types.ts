@@ -15,7 +15,8 @@ interface ProgressBarBase extends MGTimingProps, MGPositionProps {
   // Color of the progress fill itself. Default "#FFFFFF" — white reads on
   // any footage and stays out of the way of brand color elsewhere.
   fillColor?: string;
-  // Brand accent for the eyebrow label + hairline rule. Default "#C8551F".
+  // Accent for the eyebrow label + hairline rule. Default "#D4A12A"
+  // (warm gold — reads as "money/wealth" on revenue-goal trackers).
   accentColor?: string;
   trackColor?: string;
   milestones?: ProgressBarMilestone[];

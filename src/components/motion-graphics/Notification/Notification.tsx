@@ -1,6 +1,7 @@
 import React from "react";
 import { AbsoluteFill, interpolate, spring, useVideoConfig } from "remotion";
 import { FONT_FAMILIES } from "../../../utils/fonts";
+import { resolveMGPosition } from "../shared/positioning";
 import { useMGPhase } from "../shared/useMGPhase";
 import { APP_ICONS } from "./icons";
 import type { NotificationItem, NotificationProps } from "./types";
@@ -214,7 +215,18 @@ export const Notification: React.FC<NotificationProps> = ({
   exitFrames,
   platform = "ios",
   notifications,
+  anchor,
+  offsetX,
+  offsetY,
+  scale,
 }) => {
+  // Default anchor: centered horizontally at the top of the frame (phone
+  // banner behavior). The per-platform top inset is added via offsetY.
+  const platformTopOffset = STYLES[platform].topOffset;
+  const { containerStyle, wrapperStyle } = resolveMGPosition(
+    { anchor, offsetX, offsetY, scale },
+    { anchor: "top", offsetY: platformTopOffset },
+  );
   const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress, phase } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
@@ -238,14 +250,16 @@ export const Notification: React.FC<NotificationProps> = ({
     extrapolateRight: "clamp",
   });
 
+  // Stack width — frame width minus both side insets. Gives the
+  // authentic "banner spans the phone screen with side padding" look.
+  const stackWidth = 1080 - style.sideInset * 2;
+
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={containerStyle}>
+      <div style={wrapperStyle}>
       <div
         style={{
-          position: "absolute",
-          top: style.topOffset,
-          left: style.sideInset,
-          right: style.sideInset,
+          width: stackWidth,
           display: "flex",
           flexDirection: "column",
           gap: NOTIFICATION_GAP,
@@ -287,6 +301,7 @@ export const Notification: React.FC<NotificationProps> = ({
             </div>
           );
         })}
+      </div>
       </div>
     </AbsoluteFill>
   );

@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, interpolate, useVideoConfig } from "remotion";
+import { AbsoluteFill, interpolate } from "remotion";
 import { FONT_FAMILIES } from "../../../utils/fonts";
 import { resolveMGPosition } from "../shared/positioning";
 import { useMGPhase } from "../shared/useMGPhase";
@@ -65,7 +65,6 @@ export const StatCard: React.FC<StatCardProps> = ({
     offsetY,
     scale,
   });
-  useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
     { defaultEnterFrames: 32, defaultExitFrames: 12 },

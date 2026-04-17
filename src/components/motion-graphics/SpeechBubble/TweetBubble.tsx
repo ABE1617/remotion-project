@@ -49,7 +49,7 @@ export const TweetBubble: React.FC<TweetBubbleProps> = ({
   width = 620,
   avatarSrc,
   initials,
-  avatarColor = "#FF3B30",
+  avatarColor = "#C8551F",
   name,
   handle,
   timestamp,

@@ -189,7 +189,7 @@ export const AnnotationArrow: React.FC<AnnotationArrowProps> = ({
   end,
   pathType = "curved-arc",
   customPath,
-  color = "#FFD60A",
+  color = "#C8551F",
   strokeWidth = 8,
   seed = 1,
   arrowheadSize = 32,

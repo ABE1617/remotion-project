@@ -9,7 +9,7 @@ export interface AnnotationArrowProps extends MGTimingProps {
   pathType?: "straight" | "curved-arc" | "j-shape" | "custom";
   // Caller-provided SVG `d` attribute. Required when `pathType === "custom"`.
   customPath?: string;
-  // Stroke color. Default "#FFD60A".
+  // Stroke color. Default "#C8551F" (rust — matches the kit accent).
   color?: string;
   // Stroke width in pixels. Default 8.
   strokeWidth?: number;

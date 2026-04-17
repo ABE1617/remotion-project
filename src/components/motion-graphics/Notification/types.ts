@@ -1,4 +1,5 @@
 import type { MGTimingProps } from "../shared/types";
+import type { MGPositionProps } from "../shared/positioning";
 
 // Supported app identifiers for the notification's icon slot.
 export type NotificationApp =
@@ -24,7 +25,7 @@ export interface NotificationItem {
   body: string;
 }
 
-export interface NotificationProps extends MGTimingProps {
+export interface NotificationProps extends MGTimingProps, MGPositionProps {
   // Controls the platform-specific visual language (default "ios").
   platform?: "ios" | "android";
   // 1-3 notifications to stack vertically. Each drops in sequentially; the

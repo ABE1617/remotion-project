@@ -108,6 +108,10 @@ import { ChartRevealDemo } from "./compositions/ChartRevealDemo";
 import { SpeechBubbleDemo } from "./compositions/SpeechBubbleDemo";
 import { ProgressBarDemo } from "./compositions/ProgressBarDemo";
 import { ChatThreadDemo } from "./compositions/ChatThreadDemo";
+import { TornPaperDemo } from "./compositions/TornPaperDemo";
+import { NewspaperRevealDemo } from "./compositions/NewspaperRevealDemo";
+import { StickyNotesDemo } from "./compositions/StickyNotesDemo";
+import { ToggleDemo } from "./compositions/ToggleDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -871,6 +875,38 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={300}
+        />
+        <Composition
+          id="mg-torn-paper"
+          component={TornPaperDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
+        />
+        <Composition
+          id="mg-newspaper-reveal"
+          component={NewspaperRevealDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={90}
+        />
+        <Composition
+          id="mg-sticky-notes"
+          component={StickyNotesDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
+        />
+        <Composition
+          id="mg-toggle"
+          component={ToggleDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
         />
       </Folder>
       <Folder name="Color-Effects">

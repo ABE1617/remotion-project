@@ -1,5 +1,11 @@
 import React from "react";
-import { AbsoluteFill, Img, interpolate, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  Easing,
+  Img,
+  interpolate,
+  useVideoConfig,
+} from "remotion";
 import { FONT_FAMILIES } from "../../../utils/fonts";
 import { msToFrames } from "../../../utils/timing";
 import { resolveMGPosition } from "../shared/positioning";
@@ -16,6 +22,13 @@ import type { ChatMessage, ChatThreadProps } from "./types";
 const ENTRANCE_FRAMES = 5;
 const DEFAULT_TYPING_MS_INCOMING = 900;
 const DEFAULT_HOLD_MS = 450;
+
+// Card-level entrance/exit — these are the OUTER animations (the whole
+// chat card appearing/disappearing). Messages schedule starts after the
+// card has fully landed so the two animations don't overlap visually.
+const CARD_ENTER_FRAMES = 14;
+const CARD_EXIT_FRAMES = 12;
+const CARD_ENTER_OFFSET = 12; // message schedule waits this many frames
 
 const DOT_CYCLE_FRAMES = 42;
 const DOT_STAGGER_FRAMES = 6;
@@ -35,8 +48,12 @@ interface ScheduleEntry {
   bubbleSettled: number;
 }
 
-function buildSchedule(messages: ChatMessage[], fps: number): ScheduleEntry[] {
-  let cursor = 0;
+function buildSchedule(
+  messages: ChatMessage[],
+  fps: number,
+  startOffset = 0,
+): ScheduleEntry[] {
+  let cursor = startOffset;
   return messages.map((m) => {
     const defaultTyping =
       m.sender === "them" ? DEFAULT_TYPING_MS_INCOMING : 0;
@@ -474,7 +491,10 @@ export const ChatThread: React.FC<ChatThreadProps> = ({
   const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
-    { defaultEnterFrames: 6, defaultExitFrames: 10 },
+    {
+      defaultEnterFrames: CARD_ENTER_FRAMES,
+      defaultExitFrames: CARD_EXIT_FRAMES,
+    },
   );
 
   const { containerStyle, wrapperStyle } = resolveMGPosition({
@@ -486,7 +506,43 @@ export const ChatThread: React.FC<ChatThreadProps> = ({
 
   if (!visible) return null;
 
-  const schedule = buildSchedule(messages, fps);
+  // --- Card-level entrance / exit animation -----------------------------
+  // Entrance: scale 0.88 → 1, fade 0 → 1, translateY 24 → 0 (rises into
+  // place), cubic ease-out across CARD_ENTER_FRAMES.
+  // Exit: scale 1 → 0.94, fade 1 → 0, translateY 0 → 14 (sinks down),
+  // cubic ease-in across the exit window.
+  const enterProgress = interpolate(
+    localFrame,
+    [0, CARD_ENTER_FRAMES],
+    [0, 1],
+    {
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+      easing: Easing.out(Easing.cubic),
+    },
+  );
+  const enterScale = interpolate(enterProgress, [0, 1], [0.88, 1]);
+  const enterOpacity = interpolate(
+    localFrame,
+    [0, CARD_ENTER_FRAMES * 0.75],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const enterTranslateY = interpolate(enterProgress, [0, 1], [24, 0]);
+
+  const exitEased = Easing.in(Easing.cubic)(exitProgress);
+  const exitScale = interpolate(exitEased, [0, 1], [1, 0.94]);
+  const exitOpacityEased = 1 - exitEased;
+  const exitTranslateY = exitEased * 14;
+
+  const isExiting = exitProgress > 0;
+  const cardScale = isExiting ? exitScale : enterScale;
+  const cardOpacity = isExiting ? exitOpacityEased : enterOpacity;
+  const cardTranslateY = isExiting ? exitTranslateY : enterTranslateY;
+
+  // Offset the message schedule so messages start arriving AFTER the card
+  // has fully landed — avoids the bubbles fading in over a fading card.
+  const schedule = buildSchedule(messages, fps, CARD_ENTER_OFFSET);
 
   const messageStates = messages.map((m, i) => {
     const s = schedule[i];
@@ -527,8 +583,6 @@ export const ChatThread: React.FC<ChatThreadProps> = ({
         )
       : 0;
 
-  const exitOpacity = 1 - exitProgress;
-
   return (
     <AbsoluteFill style={containerStyle}>
       <div style={wrapperStyle}>
@@ -541,7 +595,9 @@ export const ChatThread: React.FC<ChatThreadProps> = ({
             display: "flex",
             flexDirection: "column",
             overflow: "hidden",
-            opacity: exitOpacity,
+            opacity: cardOpacity,
+            transform: `translateY(${cardTranslateY}px) scale(${cardScale})`,
+            transformOrigin: "center center",
             boxShadow:
               "0 28px 80px rgba(0,0,0,0.6), 0 4px 12px rgba(0,0,0,0.4)",
           }}

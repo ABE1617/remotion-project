@@ -1,6 +1,13 @@
 import React from "react";
-import { AbsoluteFill, Sequence, staticFile } from "remotion";
+import {
+  AbsoluteFill,
+  interpolate,
+  Sequence,
+  staticFile,
+  useCurrentFrame,
+} from "remotion";
 import { Video } from "@remotion/media";
+import { FONT_FAMILIES } from "../utils/fonts";
 import {
   LowerThird,
   BRollFrame,
@@ -18,22 +25,80 @@ import {
 
 // ---------------------------------------------------------------------------
 // MGShowcaseDemo — plays all 12 delivered motion graphics sequentially over
-// the same sample footage. Each MG gets its own segment; most at 5s, a few
-// that need longer to play out (Notification stack, ChatThread, BRollFrame
-// stack) get 6-9s so everything lands cleanly before the next starts.
+// the same sample footage. Each segment shows a small centered title card
+// at the top of the frame so the viewer knows which component is running.
 // ---------------------------------------------------------------------------
 
-// Segment durations in frames (@ 30fps). Keep in sync with RUN[] below.
 const FPS = 30;
+
+// Small fading title shown at the top of each segment.
+const SegmentTitle: React.FC<{
+  text: string;
+  segmentFrames: number;
+}> = ({ text, segmentFrames }) => {
+  const frame = useCurrentFrame();
+  const fadeIn = interpolate(frame, [0, 8], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const fadeOut = interpolate(
+    frame,
+    [segmentFrames - 10, segmentFrames - 2],
+    [1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const opacity = Math.min(fadeIn, fadeOut);
+  const driftY = interpolate(frame, [0, 8], [-8, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 64,
+        left: 0,
+        right: 0,
+        display: "flex",
+        justifyContent: "center",
+        pointerEvents: "none",
+        opacity,
+        transform: `translateY(${driftY}px)`,
+      }}
+    >
+      <div
+        style={{
+          fontFamily: FONT_FAMILIES.inter,
+          fontSize: 26,
+          fontWeight: 600,
+          color: "#F2E9D6",
+          letterSpacing: "0.32em",
+          textTransform: "uppercase",
+          textShadow:
+            "0 2px 10px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,0.7)",
+          backgroundColor: "rgba(10,10,10,0.72)",
+          padding: "12px 22px",
+          borderRadius: 2,
+          border: "1px solid rgba(200,85,31,0.5)",
+        }}
+      >
+        {text}
+      </div>
+    </div>
+  );
+};
 
 const RUN: {
   label: string;
+  displayName: string;
   frames: number;
   render: (segmentMs: number) => React.ReactNode;
 }[] = [
   {
     label: "LowerThird",
-    frames: 150, // 5s
+    displayName: "Lower Third",
+    frames: 150,
     render: (ms) => (
       <LowerThird
         name="Zac Alexander"
@@ -45,7 +110,8 @@ const RUN: {
   },
   {
     label: "BRollFrame",
-    frames: 210, // 7s — lets all 3 polaroids land + hold + exit
+    displayName: "B-Roll Frame",
+    frames: 210,
     render: (ms) => (
       <BRollFrame
         src={[
@@ -65,7 +131,8 @@ const RUN: {
   },
   {
     label: "QuoteCard",
-    frames: 180, // 6s
+    displayName: "Quote Card",
+    frames: 180,
     render: (ms) => (
       <QuoteCard
         quote="The people who are crazy enough to think they can change the world are the ones who do."
@@ -78,7 +145,8 @@ const RUN: {
   },
   {
     label: "StatCard",
-    frames: 150, // 5s
+    displayName: "Stat Card",
+    frames: 150,
     render: (ms) => (
       <StatCard
         value={500000}
@@ -91,7 +159,8 @@ const RUN: {
   },
   {
     label: "Notification",
-    frames: 240, // 8s — 3 notifications with 1s stagger + hold + exit
+    displayName: "Notification",
+    frames: 240,
     render: (ms) => (
       <Notification
         platform="ios"
@@ -125,7 +194,8 @@ const RUN: {
   },
   {
     label: "ChartReveal",
-    frames: 180, // 6s
+    displayName: "Chart Reveal",
+    frames: 180,
     render: (ms) => (
       <ChartReveal
         chartType="bar"
@@ -149,7 +219,8 @@ const RUN: {
   },
   {
     label: "SpeechBubble",
-    frames: 150, // 5s
+    displayName: "Speech Bubble",
+    frames: 150,
     render: (ms) => (
       <SpeechBubble
         platform="tweet"
@@ -171,7 +242,8 @@ const RUN: {
   },
   {
     label: "ProgressBar",
-    frames: 150, // 5s
+    displayName: "Progress Bar",
+    frames: 150,
     render: (ms) => (
       <ProgressBar
         label="Road to the goal"
@@ -192,7 +264,8 @@ const RUN: {
   },
   {
     label: "ChatThread",
-    frames: 300, // 10s — 5 messages with typing indicators
+    displayName: "Chat Thread",
+    frames: 300,
     render: (ms) => (
       <ChatThread
         header={{
@@ -223,7 +296,8 @@ const RUN: {
   },
   {
     label: "TornPaper",
-    frames: 150, // 5s
+    displayName: "Torn Paper",
+    frames: 150,
     render: (ms) => (
       <TornPaper
         topText="BREAKING"
@@ -235,7 +309,8 @@ const RUN: {
   },
   {
     label: "StickyNotes",
-    frames: 180, // 6s
+    displayName: "Sticky Notes",
+    frames: 180,
     render: (ms) => (
       <StickyNotes
         notes={[
@@ -250,7 +325,8 @@ const RUN: {
   },
   {
     label: "RecordingFrame",
-    frames: 150, // 5s
+    displayName: "Recording Frame",
+    frames: 150,
     render: (ms) => (
       <RecordingFrame startMs={0} durationMs={ms - 200} />
     ),
@@ -258,7 +334,6 @@ const RUN: {
 ];
 
 export const MGShowcaseDemo: React.FC = () => {
-  // Compute cumulative start frames.
   let cursor = 0;
   const segments = RUN.map((seg) => {
     const start = cursor;
@@ -268,7 +343,6 @@ export const MGShowcaseDemo: React.FC = () => {
 
   return (
     <AbsoluteFill>
-      {/* Background video — loops across the whole showcase */}
       <Video
         src={staticFile("sample-video.mp4")}
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
@@ -284,6 +358,10 @@ export const MGShowcaseDemo: React.FC = () => {
             durationInFrames={seg.frames}
           >
             {seg.render(segmentMs)}
+            <SegmentTitle
+              text={seg.displayName}
+              segmentFrames={seg.frames}
+            />
           </Sequence>
         );
       })}
@@ -291,7 +369,6 @@ export const MGShowcaseDemo: React.FC = () => {
   );
 };
 
-// Total duration for the composition (exported for Root.tsx).
 export const MG_SHOWCASE_TOTAL_FRAMES = RUN.reduce(
   (sum, seg) => sum + seg.frames,
   0,

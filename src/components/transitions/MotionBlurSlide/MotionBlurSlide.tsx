@@ -1,5 +1,6 @@
 import React from "react";
 import { AbsoluteFill, interpolate, Easing, OffthreadVideo } from "remotion";
+import { MotionBlurWrap } from "../shared/MotionBlurWrap";
 import type { MotionBlurSlideProps } from "../types";
 
 export const MOTION_BLUR_SLIDE_PEAK_PROGRESS = 0.5;
@@ -9,6 +10,10 @@ export const MOTION_BLUR_SLIDE_PEAK_PROGRESS = 0.5;
  * the same direction simultaneously, with asymmetric motion blur peaks
  * (clipA peaks at 0.4, clipB at 0.6) that sell the "passing past each
  * other" page-turn feel. A calmer cousin of WhipPan.
+ *
+ * Uses MotionBlurWrap for multi-sample directional streaks (not soft
+ * isotropic blur). Streaks follow the slide direction for a real sense
+ * of motion rather than a generic "blurry everything" look.
  */
 export const MotionBlurSlide: React.FC<MotionBlurSlideProps> = ({
   clipA,
@@ -49,16 +54,19 @@ export const MotionBlurSlide: React.FC<MotionBlurSlideProps> = ({
   });
 
   // Asymmetric triangular blur peaks — clipA peaks at 0.4, clipB at 0.6.
+  // Scale the pixel magnitude up vs the old soft-blur value because sampled
+  // blur reads less strong per-unit than a Gaussian at the same stdDeviation.
+  const sampleStrength = blurStrength * 4;
   const clipABlur = interpolate(
     progress,
     [0, 0.4, 1],
-    [0, blurStrength, 0],
+    [0, sampleStrength, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
   const clipBBlur = interpolate(
     progress,
     [0, 0.6, 1],
-    [0, blurStrength, 0],
+    [0, sampleStrength, 0],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
@@ -69,13 +77,36 @@ export const MotionBlurSlide: React.FC<MotionBlurSlideProps> = ({
     ? `translateX(calc(${translateBPct}% + ${gapOffsetB}px))`
     : `translateY(calc(${translateBPct}% + ${gapOffsetB}px))`;
 
+  // Trail direction — matches the slide direction so streaks extend behind
+  // where each clip is heading.
+  const axisX = isHorizontal ? sign : 0;
+  const axisY = isHorizontal ? 0 : sign;
+
   return (
     <AbsoluteFill style={{ overflow: "hidden", background: "#000", ...style }}>
-      <AbsoluteFill style={{ transform: transformA, filter: `blur(${clipABlur}px)`, willChange: "transform, filter" }}>
-        <OffthreadVideo src={clipA} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <AbsoluteFill style={{ transform: transformA, willChange: "transform" }}>
+        <MotionBlurWrap
+          samples={7}
+          offsetX={axisX * clipABlur}
+          offsetY={axisY * clipABlur}
+        >
+          <OffthreadVideo
+            src={clipA}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </MotionBlurWrap>
       </AbsoluteFill>
-      <AbsoluteFill style={{ transform: transformB, filter: `blur(${clipBBlur}px)`, willChange: "transform, filter" }}>
-        <OffthreadVideo src={clipB} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      <AbsoluteFill style={{ transform: transformB, willChange: "transform" }}>
+        <MotionBlurWrap
+          samples={7}
+          offsetX={axisX * clipBBlur}
+          offsetY={axisY * clipBBlur}
+        >
+          <OffthreadVideo
+            src={clipB}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </MotionBlurWrap>
       </AbsoluteFill>
     </AbsoluteFill>
   );

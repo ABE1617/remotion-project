@@ -1,5 +1,6 @@
 import React from "react";
 import { AbsoluteFill, interpolate, Easing, OffthreadVideo } from "remotion";
+import { MotionBlurWrap } from "../shared/MotionBlurWrap";
 import type { WhipPanProps } from "../types";
 
 export const WHIP_PAN_PEAK_PROGRESS = 0.5;
@@ -16,9 +17,13 @@ const DIRECTION_AXIS: Record<NonNullable<WhipPanProps["direction"]>, Axis> = {
 };
 
 /**
- * WhipPan — fast camera-pan simulation with directional motion blur.
+ * WhipPan — fast camera-pan simulation with sampled directional motion blur.
  * Velocity at the cut is matched on both halves (mirrored easing) so the
  * eye reads a single continuous camera movement interrupted by a cut.
+ *
+ * Uses MotionBlurWrap for multi-sample streaks (8 samples), not soft SVG
+ * Gaussian blur. The trail actually preserves frame detail behind the
+ * current position — the premium look.
  */
 export const WhipPan: React.FC<WhipPanProps> = ({
   clipA,
@@ -68,56 +73,46 @@ export const WhipPan: React.FC<WhipPanProps> = ({
     extrapolateRight: "clamp",
   });
 
-  // Blur magnitude — mirrored around the cut. Peaks at progress 0.5.
-  const blurPeak = 60 * intensity;
-  const blurA = interpolate(progress, [0, 0.5], [0, blurPeak], {
+  // Motion-blur sample offset — projected along the axis. Peaks at the cut.
+  // The `blurStrength` is how many pixels the furthest sample trails behind.
+  const blurStrength = 140 * intensity;
+  const blurA = interpolate(progress, [0, 0.5], [0, blurStrength], {
     easing: easeIn,
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const blurB = interpolate(progress, [0.5, 1], [blurPeak, 0], {
+  const blurB = interpolate(progress, [0.5, 1], [blurStrength, 0], {
     easing: easeOut,
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  // Directional blur — project magnitude onto axis so diagonals blur both axes.
-  const blurAX = Math.abs(axis.x) * blurA;
-  const blurAY = Math.abs(axis.y) * blurA;
-  const blurBX = Math.abs(axis.x) * blurB;
-  const blurBY = Math.abs(axis.y) * blurB;
+  // Trail direction matches the element's MOTION direction (axis), so the
+  // trail extends behind where the element is heading.
+  const blurAOffsetX = axis.x * blurA;
+  const blurAOffsetY = axis.y * blurA;
+  const blurBOffsetX = axis.x * blurB;
+  const blurBOffsetY = axis.y * blurB;
 
   return (
     <AbsoluteFill style={{ overflow: "hidden", background: "#000", ...style }}>
-      <svg style={{ position: "absolute", width: 0, height: 0 }} aria-hidden>
-        <defs>
-          <filter id="whip-blur-a" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur
-              stdDeviation={`${blurAX} ${blurAY}`}
-              edgeMode="duplicate"
-            />
-          </filter>
-          <filter id="whip-blur-b" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur
-              stdDeviation={`${blurBX} ${blurBY}`}
-              edgeMode="duplicate"
-            />
-          </filter>
-        </defs>
-      </svg>
-
       {!showClipB && (
         <AbsoluteFill
           style={{
             transform: `translate(${translateAX}%, ${translateAY}%) scale(${scaleA})`,
-            filter: "url(#whip-blur-a)",
-            willChange: "transform, filter",
+            willChange: "transform",
           }}
         >
-          <OffthreadVideo
-            src={clipA}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          <MotionBlurWrap
+            samples={8}
+            offsetX={blurAOffsetX}
+            offsetY={blurAOffsetY}
+          >
+            <OffthreadVideo
+              src={clipA}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </MotionBlurWrap>
         </AbsoluteFill>
       )}
 
@@ -125,14 +120,19 @@ export const WhipPan: React.FC<WhipPanProps> = ({
         <AbsoluteFill
           style={{
             transform: `translate(${translateBX}%, ${translateBY}%) scale(${scaleB})`,
-            filter: "url(#whip-blur-b)",
-            willChange: "transform, filter",
+            willChange: "transform",
           }}
         >
-          <OffthreadVideo
-            src={clipB}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          <MotionBlurWrap
+            samples={8}
+            offsetX={blurBOffsetX}
+            offsetY={blurBOffsetY}
+          >
+            <OffthreadVideo
+              src={clipB}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          </MotionBlurWrap>
         </AbsoluteFill>
       )}
     </AbsoluteFill>

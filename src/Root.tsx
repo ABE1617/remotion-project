@@ -84,6 +84,7 @@ import { AnamorphicStreakTransitionDemo } from "./compositions/AnamorphicStreakT
 import { PanelStackTransitionDemo } from "./compositions/PanelStackTransitionDemo";
 import { StepPushTransitionDemo } from "./compositions/StepPushTransitionDemo";
 import { CardLiftTransitionDemo } from "./compositions/CardLiftTransitionDemo";
+import { NewspaperWipeTransitionDemo } from "./compositions/NewspaperWipeTransitionDemo";
 import { IlluminateDemo } from "./Testing/Illuminate/IlluminateDemo";
 import { GravityDemo } from "./Testing/Gravity/GravityDemo";
 import { TrackDemo } from "./Testing/Track/TrackDemo";
@@ -109,7 +110,6 @@ import { SpeechBubbleDemo } from "./compositions/SpeechBubbleDemo";
 import { ProgressBarDemo } from "./compositions/ProgressBarDemo";
 import { ChatThreadDemo } from "./compositions/ChatThreadDemo";
 import { TornPaperDemo } from "./compositions/TornPaperDemo";
-import { NewspaperRevealDemo } from "./compositions/NewspaperRevealDemo";
 import { StickyNotesDemo } from "./compositions/StickyNotesDemo";
 import { ToggleDemo } from "./compositions/ToggleDemo";
 
@@ -760,6 +760,14 @@ export const RemotionRoot: React.FC = () => {
           fps={FPS}
           durationInFrames={300}
         />
+        <Composition
+          id="transition-newspaper-wipe"
+          component={NewspaperWipeTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
       </Folder>
       <Folder name="Motion-Graphics">
         <Composition
@@ -883,14 +891,6 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={180}
-        />
-        <Composition
-          id="mg-newspaper-reveal"
-          component={NewspaperRevealDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={90}
         />
         <Composition
           id="mg-sticky-notes"

@@ -167,3 +167,8 @@ export interface CardLiftProps extends TransitionProps {
   // Scale the lifting card shrinks to. Default 0.9.
   liftScale?: number;
 }
+
+export interface NewspaperWipeProps extends TransitionProps {
+  // Path under /public for the newspaper image. Default "torn-newspaper.png".
+  assetPath?: string;
+}

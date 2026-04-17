@@ -35,3 +35,4 @@ export {
 export { PanelStack, PANEL_STACK_PEAK_PROGRESS } from "./PanelStack";
 export { StepPush, STEP_PUSH_PEAK_PROGRESS } from "./StepPush";
 export { CardLift, CARD_LIFT_PEAK_PROGRESS } from "./CardLift";
+export { NewspaperWipe, NEWSPAPER_WIPE_PEAK_PROGRESS } from "./NewspaperWipe";

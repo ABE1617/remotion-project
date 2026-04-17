@@ -46,8 +46,6 @@ export type {
 } from "./ChatThread";
 export { TornPaper } from "./TornPaper";
 export type { TornPaperProps } from "./TornPaper";
-export { NewspaperReveal } from "./NewspaperReveal";
-export type { NewspaperRevealProps } from "./NewspaperReveal";
 export { StickyNotes } from "./StickyNotes";
 export type { StickyNotesProps, StickyNote } from "./StickyNotes";
 export { Toggle } from "./Toggle";

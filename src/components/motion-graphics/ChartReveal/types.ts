@@ -1,38 +1,41 @@
 import type { MGTimingProps } from "../shared/types";
+import type { MGPositionProps } from "../shared/positioning";
 
 export interface DataPoint {
-  // Category label (x-axis). Used directly on bar charts; for line charts only
-  // the first and last point labels are rendered as anchor axis labels.
+  // Category label (x-axis). Shown below each bar; for line charts only the
+  // first and last labels are rendered as anchor marks.
   label?: string;
   // Raw numeric value. Scale is computed automatically across the series.
   value: number;
 }
 
 export interface ChartHighlight {
-  // Index into the `data` array to attach the callout marker to.
+  // Index into the `data` array to attach the peak callout to.
   index: number;
-  // Text shown inside the floating label above the marker.
-  label: string;
+  // Display label — if omitted, derived from the data point's value using
+  // the global prefix/suffix.
+  label?: string;
 }
 
-export interface ChartRevealProps extends MGTimingProps {
-  // "line" draws a smoothed single-series curve; "bar" renders vertical bars
-  // with rounded tops. Default "line".
+export interface ChartRevealProps extends MGTimingProps, MGPositionProps {
+  // "bar" (default) — the viral short-form format, bars with values on top.
+  // "line" — clean single-series curve with optional dot markers.
   chartType?: "line" | "bar";
-  // Data series (minimum 2 points for a line chart).
+  // Data series (minimum 2 points).
   data: DataPoint[];
-  // Optional title rendered above the chart. Upper-case-styled by caller.
+  // Optional headline above the chart (e.g. "Monthly Revenue").
   title?: string;
-  // Total card width in pixels. Default 720.
+  // Optional prefix applied to all value labels (e.g. "$").
+  prefix?: string;
+  // Optional suffix applied to all value labels (e.g. "K", "%", "M").
+  suffix?: string;
+  // Decimals in the rendered value (default 0).
+  decimals?: number;
+  // Overall chart size. Chart centers on the frame.
   width?: number;
-  // Chart plot-area height (not including title / axis labels / padding). Default 480.
   height?: number;
-  // Solid card background variant. Default "light".
-  cardStyle?: "light" | "dark";
-  // Line / bar color. Default "#FF3B30".
+  // Line / bar color. Default "#C8551F" (rust).
   accentColor?: string;
-  // Line-chart only — fade in a soft gradient fill under the curve. Default false.
-  fillBelow?: boolean;
-  // Optional callout that scales in last with a pointer label + marker dot.
+  // Optional peak callout — scales in last near the highlighted point.
   highlight?: ChartHighlight;
 }

@@ -2,6 +2,7 @@ import React from "react";
 import { AbsoluteFill, interpolate, spring, useVideoConfig } from "remotion";
 import { SPRING_SNAPPY } from "../../../utils/animations";
 import { FONT_FAMILIES } from "../../../utils/fonts";
+import { resolveMGPosition } from "../shared/positioning";
 import { useMGPhase } from "../shared/useMGPhase";
 import { composeBubbleTransform } from "./shared";
 import type { IMessageBubbleProps } from "./types";
@@ -32,13 +33,20 @@ export const IMessageBubble: React.FC<IMessageBubbleProps> = ({
   durationMs,
   enterFrames,
   exitFrames,
-  position,
+  anchor,
+  offsetX,
+  offsetY,
+  scale,
   width = 620,
   messageType,
   text,
   status,
   typewriter = false,
 }) => {
+  const { containerStyle, wrapperStyle } = resolveMGPosition(
+    { anchor, offsetX, offsetY, scale },
+    { anchor: "top", offsetY: 820 },
+  );
   const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
@@ -88,16 +96,11 @@ export const IMessageBubble: React.FC<IMessageBubbleProps> = ({
     displayedText = text.slice(0, chars);
   }
 
-  const left = position ? position.x : (1080 - width) / 2;
-  const top = position ? position.y : 820;
-
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={containerStyle}>
+      <div style={wrapperStyle}>
       <div
         style={{
-          position: "absolute",
-          left,
-          top,
           width,
           transform,
           opacity,
@@ -143,6 +146,7 @@ export const IMessageBubble: React.FC<IMessageBubbleProps> = ({
             {status}
           </div>
         ) : null}
+      </div>
       </div>
     </AbsoluteFill>
   );

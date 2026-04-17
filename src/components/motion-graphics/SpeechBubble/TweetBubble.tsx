@@ -2,6 +2,7 @@ import React from "react";
 import { AbsoluteFill, spring, useVideoConfig } from "remotion";
 import { SPRING_SNAPPY } from "../../../utils/animations";
 import { FONT_FAMILIES } from "../../../utils/fonts";
+import { resolveMGPosition } from "../shared/positioning";
 import { useMGPhase } from "../shared/useMGPhase";
 import {
   HeartIcon,
@@ -41,7 +42,10 @@ export const TweetBubble: React.FC<TweetBubbleProps> = ({
   durationMs,
   enterFrames,
   exitFrames,
-  position,
+  anchor,
+  offsetX,
+  offsetY,
+  scale,
   width = 620,
   avatarSrc,
   initials,
@@ -54,6 +58,11 @@ export const TweetBubble: React.FC<TweetBubbleProps> = ({
   stats,
   darkMode = false,
 }) => {
+  // Default anchor: centered horizontally, 720px from top (legacy position).
+  const { containerStyle, wrapperStyle } = resolveMGPosition(
+    { anchor, offsetX, offsetY, scale },
+    { anchor: "top", offsetY: 720 },
+  );
   const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
@@ -82,19 +91,11 @@ export const TweetBubble: React.FC<TweetBubbleProps> = ({
   // "@handle · 2h" for them — otherwise render `handle` as-is.
   const handleLine = timestamp ? `${handle} · ${timestamp}` : handle;
 
-  // Pixel position defaults: horizontally center in the 1080-wide frame,
-  // vertically anchor ~720px from top (rule-of-thirds-ish, leaves room for
-  // upper-frame captions). Callers can override via `position`.
-  const left = position ? position.x : (1080 - width) / 2;
-  const top = position ? position.y : 720;
-
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={containerStyle}>
+      <div style={wrapperStyle}>
       <div
         style={{
-          position: "absolute",
-          left,
-          top,
           width,
           transform,
           opacity,
@@ -239,6 +240,7 @@ export const TweetBubble: React.FC<TweetBubbleProps> = ({
             color={theme.muted}
           />
         </div>
+      </div>
       </div>
     </AbsoluteFill>
   );

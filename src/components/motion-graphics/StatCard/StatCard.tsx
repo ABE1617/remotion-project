@@ -1,75 +1,44 @@
 import React from "react";
-import { AbsoluteFill, interpolate, spring, useVideoConfig } from "remotion";
-import { SPRING_SNAPPY } from "../../../utils/animations";
+import { AbsoluteFill, interpolate, useVideoConfig } from "remotion";
 import { FONT_FAMILIES } from "../../../utils/fonts";
+import { resolveMGPosition } from "../shared/positioning";
 import { useMGPhase } from "../shared/useMGPhase";
 import type { StatCardProps } from "./types";
 
 // ---------------------------------------------------------------------------
-// StatCard — Apple-keynote-style single-stat reveal.
+// StatCard — no-card big-stat reveal (short-form creator pattern).
 // ---------------------------------------------------------------------------
 //
-// Choreography (entrance @ 30fps):
-//   0-10  card scales 0.96→1 (SPRING_SNAPPY) + fades 0→1
-//   6-26  NUMBER counts up fromValue → value with ease-out cubic (weighty)
-//   26-32 LANDING PULSE — number scales 1.0→1.08→1.0 (triangular)
-//   28-36 label fades + drifts translateY(8px → 0)
-//   32-38 source fades in (no drift)
+// No backdrop, no chrome. The stat sits directly on the video: huge Anton
+// number in cream/rust, small tracked label beneath. Drop shadow carries it
+// over any footage. Exactly how Hormozi/Gadzhi/premium-creator stat callouts
+// read on Reels/Shorts.
 //
-// Hold: nothing — stat sits still so viewers can read it.
+// Choreography (entrance @ 30fps, 32 frames):
+//   0-8   number scales 0.92→1 + fades in
+//   4-24  count-up fromValue → value (ease-out cubic)
+//   24-30 landing pulse 1 → 1.08 → 1
+//   22-32 label fades + drifts translateY(8→0)
 //
-// Exit (12 frames):
-//   whole card scales 1.0→0.96 + fades to 0.
-//
-// Quality notes:
-//   - tabular-nums on the number + prefix/suffix so digit widths never shift
-//   - toLocaleString() for thousands separators (500,000 not 500000)
-//   - solid backgrounds only (no translucency — client has been burned before)
+// Exit (12 frames): number + label fade + translateY(-10px) drift upward.
 
-const CARD_RADIUS = 16;
-const CARD_PADDING_X = 80;
-const CARD_PADDING_Y = 72;
-const CARD_MIN_WIDTH = 540;
+const NUMBER_SIZE = 240;
+const AFFIX_SIZE = 132;
+const AFFIX_GAP = 10;
+const LABEL_SIZE = 34;
+const RULE_WIDTH = 48;
+const RULE_HEIGHT = 2;
+const NUMBER_TO_RULE = 22;
+const RULE_TO_LABEL = 18;
 
-const NUMBER_SIZE = 168;
-const AFFIX_SIZE = 96;
-const AFFIX_GAP = 8;
-
-const LABEL_GAP = 28;
-const SOURCE_GAP = 32;
-
-// Ease-out cubic — slow, weighty landing.
+// Ease-out cubic — slow, weighty landing for the count-up.
 const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
 
-interface Palette {
-  bg: string;
-  stat: string;
-  label: string;
-  source: string;
-  shadow: string;
-  topBorder: string | null;
-}
-
-const getPalette = (style: "light" | "dark", accent: string): Palette => {
-  if (style === "dark") {
-    return {
-      bg: "#0A0A0A",
-      stat: "#FFFFFF",
-      label: "#E5E5E5",
-      source: "#9A9A9A",
-      shadow: "0 16px 48px rgba(0,0,0,0.5)",
-      topBorder: accent,
-    };
-  }
-  return {
-    bg: "#F8F7F4",
-    stat: "#0A0A0A",
-    label: "#1A1A1A",
-    source: "#6B6B6B",
-    shadow: "0 16px 48px rgba(0,0,0,0.25)",
-    topBorder: null,
-  };
-};
+// Drop shadow stack — makes the text readable over any video background
+// without a box. Two shadows: a close dark one for definition, a larger
+// diffused one for atmospheric lift.
+const TEXT_SHADOW =
+  "0 2px 8px rgba(0,0,0,0.85), 0 12px 40px rgba(0,0,0,0.6)";
 
 export const StatCard: React.FC<StatCardProps> = ({
   startMs,
@@ -82,37 +51,41 @@ export const StatCard: React.FC<StatCardProps> = ({
   suffix,
   decimals,
   label,
-  source,
-  cardStyle = "light",
-  accentColor = "#FF3B30",
+  numberColor = "#FFFFFF",
+  labelColor = "#FFFFFF",
+  accentColor = "#C8551F",
+  anchor,
+  offsetX,
+  offsetY,
+  scale,
 }) => {
-  const { fps } = useVideoConfig();
+  const { containerStyle, wrapperStyle } = resolveMGPosition({
+    anchor,
+    offsetX,
+    offsetY,
+    scale,
+  });
+  useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
-    { defaultEnterFrames: 38, defaultExitFrames: 12 },
+    { defaultEnterFrames: 32, defaultExitFrames: 12 },
   );
 
   if (!visible) return null;
 
-  const palette = getPalette(cardStyle, accentColor);
-
-  // --- Card entrance (frames 0-10) ---------------------------------------
-
-  const cardEnterSpring = spring({
-    fps,
-    frame: localFrame,
-    config: SPRING_SNAPPY,
-    durationInFrames: 10,
+  // --- Number entrance (frames 0-8) --------------------------------------
+  const numberEnterScale = interpolate(localFrame, [0, 8], [0.92, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: easeOutCubic,
   });
-  const cardEnterScale = interpolate(cardEnterSpring, [0, 1], [0.96, 1]);
-  const cardFadeIn = interpolate(localFrame, [0, 10], [0, 1], {
+  const numberFadeIn = interpolate(localFrame, [0, 8], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  // --- Count-up (frames 6-26) --------------------------------------------
-
-  const countProgress = interpolate(localFrame, [6, 26], [0, 1], {
+  // --- Count-up (frames 4-24) --------------------------------------------
+  const countProgress = interpolate(localFrame, [4, 24], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -123,85 +96,48 @@ export const StatCard: React.FC<StatCardProps> = ({
       ? currentValue.toFixed(decimals)
       : Math.round(currentValue).toLocaleString();
 
-  // --- Landing pulse (frames 26-32) --------------------------------------
-  // Triangular curve: 26→29 scales 1→1.08, 29→32 scales 1.08→1.
+  // --- Landing pulse (frames 24-30) --------------------------------------
   const pulseScale = interpolate(
     localFrame,
-    [26, 29, 32],
+    [24, 27, 30],
     [1, 1.08, 1],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  // --- Label (frames 28-36) ----------------------------------------------
-
-  const labelFadeIn = interpolate(localFrame, [28, 36], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const labelY = interpolate(localFrame, [28, 36], [8, 0], {
+  // --- Rule draw (frames 24-30) — scaleX from center ---------------------
+  const ruleScaleX = interpolate(localFrame, [24, 30], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  // --- Source (frames 32-38) ---------------------------------------------
-
-  const sourceFadeIn = interpolate(localFrame, [32, 38], [0, 1], {
+  // --- Label (frames 26-32) ----------------------------------------------
+  const labelFadeIn = interpolate(localFrame, [26, 32], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const labelY = interpolate(localFrame, [26, 32], [8, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
   // --- Exit (last 12 frames) ---------------------------------------------
-  // Whole card scales 1→0.96 and fades out.
-  const exitScale = interpolate(exitProgress, [0, 1], [1, 0.96]);
+  // Whole stack drifts up and fades — no card to scale down, so motion is
+  // all in the text.
+  const exitDriftY = exitProgress * -10;
   const exitOpacity = 1 - exitProgress;
 
-  // --- Compose -----------------------------------------------------------
-
-  const cardScale = cardEnterScale * exitScale;
-  const cardOpacity = cardFadeIn * exitOpacity;
-
   return (
-    <AbsoluteFill
-      style={{
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
+    <AbsoluteFill style={containerStyle}>
+      <div style={wrapperStyle}>
       <div
         style={{
-          position: "relative",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: palette.bg,
-          borderRadius: CARD_RADIUS,
-          paddingLeft: CARD_PADDING_X,
-          paddingRight: CARD_PADDING_X,
-          paddingTop: CARD_PADDING_Y,
-          paddingBottom: CARD_PADDING_Y,
-          minWidth: CARD_MIN_WIDTH,
-          maxWidth: "85%",
-          boxShadow: palette.shadow,
-          transform: `scale(${cardScale})`,
-          opacity: cardOpacity,
-          overflow: "hidden",
+          transform: `translateY(${exitDriftY}px)`,
+          opacity: exitOpacity,
         }}
       >
-        {/* Top accent border — dark variant only */}
-        {palette.topBorder ? (
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 1,
-              backgroundColor: palette.topBorder,
-            }}
-          />
-        ) : null}
-
         {/* Number row — prefix + value + suffix, baseline-aligned */}
         <div
           style={{
@@ -209,11 +145,13 @@ export const StatCard: React.FC<StatCardProps> = ({
             flexDirection: "row",
             alignItems: "baseline",
             justifyContent: "center",
-            transform: `scale(${pulseScale})`,
+            transform: `scale(${numberEnterScale * pulseScale})`,
             transformOrigin: "center",
+            opacity: numberFadeIn,
             fontVariantNumeric: "tabular-nums",
-            color: palette.stat,
+            color: numberColor,
             lineHeight: 1,
+            textShadow: TEXT_SHADOW,
           }}
         >
           {prefix ? (
@@ -224,7 +162,7 @@ export const StatCard: React.FC<StatCardProps> = ({
                 fontWeight: 400,
                 letterSpacing: "-0.02em",
                 lineHeight: 1,
-                opacity: 0.85,
+                opacity: 0.9,
                 marginRight: AFFIX_GAP,
                 fontVariantNumeric: "tabular-nums",
               }}
@@ -254,7 +192,7 @@ export const StatCard: React.FC<StatCardProps> = ({
                 fontWeight: 400,
                 letterSpacing: "-0.02em",
                 lineHeight: 1,
-                opacity: 0.85,
+                opacity: 0.9,
                 marginLeft: AFFIX_GAP,
                 fontVariantNumeric: "tabular-nums",
               }}
@@ -264,42 +202,39 @@ export const StatCard: React.FC<StatCardProps> = ({
           ) : null}
         </div>
 
+        {/* Thin rust accent rule — ties this into the rest of the kit */}
+        <div
+          style={{
+            width: RULE_WIDTH,
+            height: RULE_HEIGHT,
+            backgroundColor: accentColor,
+            marginTop: NUMBER_TO_RULE,
+            marginBottom: RULE_TO_LABEL,
+            transform: `scaleX(${ruleScaleX})`,
+            transformOrigin: "center",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
+          }}
+        />
+
         {/* Label */}
         <div
           style={{
-            marginTop: LABEL_GAP,
             fontFamily: FONT_FAMILIES.inter,
-            fontSize: 28,
+            fontSize: LABEL_SIZE,
             fontWeight: 600,
-            color: palette.label,
-            letterSpacing: "0.16em",
+            color: labelColor,
+            letterSpacing: "0.22em",
             textTransform: "uppercase",
             textAlign: "center",
             lineHeight: 1.2,
             opacity: labelFadeIn,
             transform: `translateY(${labelY}px)`,
+            textShadow: TEXT_SHADOW,
           }}
         >
           {label}
         </div>
-
-        {/* Source citation */}
-        {source ? (
-          <div
-            style={{
-              marginTop: SOURCE_GAP,
-              fontFamily: FONT_FAMILIES.inter,
-              fontSize: 20,
-              fontWeight: 400,
-              color: palette.source,
-              textAlign: "center",
-              lineHeight: 1.3,
-              opacity: sourceFadeIn,
-            }}
-          >
-            {source}
-          </div>
-        ) : null}
+      </div>
       </div>
     </AbsoluteFill>
   );

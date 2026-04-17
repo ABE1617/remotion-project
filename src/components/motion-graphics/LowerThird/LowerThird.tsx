@@ -8,6 +8,7 @@ import {
 } from "remotion";
 import { SPRING_SNAPPY } from "../../../utils/animations";
 import { FONT_FAMILIES } from "../../../utils/fonts";
+import { resolveMGPosition } from "../shared/positioning";
 import { useMGPhase } from "../shared/useMGPhase";
 import type { LowerThirdProps } from "./types";
 
@@ -24,9 +25,9 @@ import type { LowerThirdProps } from "./types";
 //
 // Hold: sub-pixel sinusoidal Y parallax (~1px).
 //
-// Exit (12 frames):
-//   everything fades + drifts translateX(-25px),
-//   accent bar retracts scaleY(1→0) from top (opposite of entrance).
+// Exit (12 frames): everything fades + drifts translateX(-25px); accent bar
+// retracts scaleY(1→0) from top. Exit fade is applied to the outer wrapper
+// so the shadow fades with the card (prevents a lingering shadow square).
 
 const CARD_PADDING_X = 56;
 const CARD_PADDING_Y = 34;
@@ -35,6 +36,25 @@ const CARD_RADIUS = 4;
 const AVATAR_SIZE = 96;
 const AVATAR_GAP = 28;
 
+// Solid diagonal gradients — fully opaque, add depth vs a flat rectangle.
+const THEMES = {
+  dark: {
+    cardGradient:
+      "linear-gradient(135deg, #0A0A0A 0%, #141416 55%, #1C1C1F 100%)",
+    cardFallback: "#0F0F10",
+    nameColor: "#FFFFFF",
+    titleColor: "#B8B8B8",
+  },
+  light: {
+    // Warm cream/bone — magazine newsprint feel.
+    cardGradient:
+      "linear-gradient(135deg, #F2E9D6 0%, #ECE2CB 55%, #E3D8BE 100%)",
+    cardFallback: "#ECE2CB",
+    nameColor: "#16120E",
+    titleColor: "#5A4E3D",
+  },
+} as const;
+
 export const LowerThird: React.FC<LowerThirdProps> = ({
   startMs,
   durationMs,
@@ -42,10 +62,21 @@ export const LowerThird: React.FC<LowerThirdProps> = ({
   exitFrames,
   name,
   title,
-  accentColor = "#FF3B30",
+  accentColor = "#C8551F",
   avatarSrc,
-  cardColor = "#0A0A0A",
+  theme = "dark",
+  anchor,
+  offsetX,
+  offsetY,
+  scale,
 }) => {
+  const palette = THEMES[theme];
+  // LowerThird anchors to bottom-left of the frame by default, 80px from the
+  // left edge and 180px above the bottom.
+  const { containerStyle, wrapperStyle } = resolveMGPosition(
+    { anchor, offsetX, offsetY, scale },
+    { anchor: "bottom-left", offsetX: 80, offsetY: -180 },
+  );
   const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
@@ -126,40 +157,31 @@ export const LowerThird: React.FC<LowerThirdProps> = ({
 
   // --- Exit ---------------------------------------------------------------
 
-  // Group drift: everything slides a touch to the left as it fades.
   const exitDriftX = exitProgress * -25;
-  // Global exit fade (applied to the whole card group).
   const exitOpacity = 1 - exitProgress;
-  // Accent bar retracts upward (opposite of entrance: origin top, 1→0).
   const barExitScaleY = 1 - exitProgress;
 
-  // --- Compose final values ----------------------------------------------
+  // Per-element opacities cover entrance only. Exit fade is on the outer
+  // wrapper so the shadow fades with the card (no lingering shadow square).
+  const barOpacity = barFadeIn;
+  const cardOpacity = cardFadeIn;
+  const nameOpacity = nameFadeIn;
+  const titleOpacity = titleFadeIn;
+  const avatarOpacity = avatarFadeIn;
 
-  const barOpacity = barFadeIn * exitOpacity;
-  const cardOpacity = cardFadeIn * exitOpacity;
-  const nameOpacity = nameFadeIn * exitOpacity;
-  const titleOpacity = titleFadeIn * exitOpacity;
-  const avatarOpacity = avatarFadeIn * exitOpacity;
-
-  // During entrance the accent bar uses scaleY from bottom (barSpring).
-  // During exit it uses scaleY from top (barExitScaleY). Because the exit
-  // window occurs well after entrance is complete, barSpring is pinned at 1
-  // and barExitScaleY will be the only driver, so we can combine by
-  // multiplying — but we need to switch transform-origin based on phase.
   const isExiting = exitProgress > 0;
   const barScaleY = isExiting ? barExitScaleY : barSpring;
   const barOrigin = isExiting ? "top" : "bottom";
 
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={containerStyle}>
+      <div style={wrapperStyle}>
       <div
         style={{
-          position: "absolute",
-          left: 80,
-          bottom: 180,
           display: "flex",
           alignItems: "center",
           transform: `translate(${exitDriftX}px, ${parallaxY}px)`,
+          opacity: exitOpacity,
         }}
       >
         {/* Avatar (outside card, to the left of the accent bar) */}
@@ -189,23 +211,22 @@ export const LowerThird: React.FC<LowerThirdProps> = ({
           </div>
         ) : null}
 
-        {/* Card (contains accent bar + text) */}
+        {/* Card (accent bar + body as siblings so each fades its own shadow) */}
         <div
           style={{
             position: "relative",
             display: "flex",
             alignItems: "stretch",
             transform: `translateX(${cardX}px)`,
-            borderRadius: CARD_RADIUS,
-            overflow: "hidden",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
           }}
         >
-          {/* Accent bar — flush to the card's left edge */}
+          {/* Accent bar — rounded on the leading edge only */}
           <div
             style={{
               width: ACCENT_WIDTH,
               backgroundColor: accentColor,
+              borderTopLeftRadius: CARD_RADIUS,
+              borderBottomLeftRadius: CARD_RADIUS,
               transform: `scaleY(${barScaleY})`,
               transformOrigin: barOrigin,
               opacity: barOpacity,
@@ -213,29 +234,34 @@ export const LowerThird: React.FC<LowerThirdProps> = ({
             }}
           />
 
-          {/* Dark card body — fully opaque (#0A0A0A by default) */}
+          {/* Card body — shadow lives here so it fades with the body */}
           <div
             style={{
-              backgroundColor: cardColor,
+              backgroundColor: palette.cardFallback,
+              backgroundImage: palette.cardGradient,
               paddingTop: CARD_PADDING_Y,
               paddingBottom: CARD_PADDING_Y,
               paddingLeft: CARD_PADDING_X,
-              paddingRight: CARD_PADDING_X + 24,
+              paddingRight: CARD_PADDING_X,
               opacity: cardOpacity,
+              borderTopRightRadius: CARD_RADIUS,
+              borderBottomRightRadius: CARD_RADIUS,
+              boxShadow:
+                "0 14px 40px rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.3)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              minWidth: 360,
+              minWidth: 280,
             }}
           >
-            {/* Name */}
+            {/* Name — editorial serif caps */}
             <div
               style={{
-                fontFamily: FONT_FAMILIES.anton,
-                fontSize: 78,
+                fontFamily: FONT_FAMILIES.dmSerifDisplay,
+                fontSize: 68,
                 fontWeight: 400,
-                color: "#FFFFFF",
-                letterSpacing: "-0.01em",
+                color: palette.nameColor,
+                letterSpacing: "0.01em",
                 lineHeight: 1,
                 textTransform: "uppercase",
                 transform: `translateX(${nameX}px)`,
@@ -252,7 +278,7 @@ export const LowerThird: React.FC<LowerThirdProps> = ({
                 fontFamily: FONT_FAMILIES.inter,
                 fontSize: 32,
                 fontWeight: 500,
-                color: "#B8B8B8",
+                color: palette.titleColor,
                 letterSpacing: "0.12em",
                 lineHeight: 1.2,
                 textTransform: "uppercase",
@@ -266,6 +292,7 @@ export const LowerThird: React.FC<LowerThirdProps> = ({
             </div>
           </div>
         </div>
+      </div>
       </div>
     </AbsoluteFill>
   );

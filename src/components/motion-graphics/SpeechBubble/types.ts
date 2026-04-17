@@ -1,4 +1,5 @@
 import type { MGTimingProps } from "../shared/types";
+import type { MGPositionProps } from "../shared/positioning";
 
 // ---------------------------------------------------------------------------
 // SpeechBubble — social-platform comment/message mocks.
@@ -10,10 +11,7 @@ import type { MGTimingProps } from "../shared/types";
 // ---------------------------------------------------------------------------
 
 // Props common to all variants.
-interface BaseProps extends MGTimingProps {
-  // Pixel coords from top-left. If omitted the bubble is horizontally centered
-  // at a platform-appropriate vertical anchor.
-  position?: { x: number; y: number };
+interface BaseProps extends MGTimingProps, MGPositionProps {
   // Card width in pixels. Default 620.
   width?: number;
 }

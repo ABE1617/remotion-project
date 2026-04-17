@@ -6,12 +6,17 @@ export const ProgressBarDemo: React.FC = () => {
   return (
     <MGDemoStage>
       <ProgressBar
-        label="Revenue to goal"
+        label="Road to the goal"
         value={72000}
         total={100000}
         formatValue={(v) => `$${(v / 1000).toFixed(0)}K`}
-        accentColor="#FF3B30"
-        milestones={[{ at: 0.25 }, { at: 0.5 }, { at: 0.75 }]}
+        fillColor="#D4A12A"
+        accentColor="#D4A12A"
+        milestones={[
+          { at: 0.25, label: "$25K" },
+          { at: 0.5, label: "$50K" },
+          { at: 0.75, label: "$75K" },
+        ]}
         startMs={400}
         durationMs={5000}
       />

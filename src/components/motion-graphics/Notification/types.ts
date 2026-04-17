@@ -10,10 +10,9 @@ export type NotificationApp =
   | "email"
   | "bank";
 
-export interface NotificationProps extends MGTimingProps {
-  // Controls the platform-specific visual language (default "ios").
-  platform?: "ios" | "android";
-  // Which app icon + look to render.
+// A single notification entry. Stack 1-3 of these in the `notifications` prop.
+export interface NotificationItem {
+  // Which app icon + style to render.
   app: NotificationApp;
   // App name shown on the top row, left side (e.g. "Apple Pay").
   appName: string;
@@ -23,4 +22,12 @@ export interface NotificationProps extends MGTimingProps {
   title: string;
   // Supporting body text. Truncates at 2 lines.
   body: string;
+}
+
+export interface NotificationProps extends MGTimingProps {
+  // Controls the platform-specific visual language (default "ios").
+  platform?: "ios" | "android";
+  // 1-3 notifications to stack vertically. Each drops in sequentially; the
+  // whole stack fades + slides up on exit.
+  notifications: NotificationItem[];
 }

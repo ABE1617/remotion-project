@@ -2,6 +2,7 @@ import React from "react";
 import { AbsoluteFill, interpolate, spring, useVideoConfig } from "remotion";
 import { SPRING_SNAPPY } from "../../../utils/animations";
 import { FONT_FAMILIES } from "../../../utils/fonts";
+import { resolveMGPosition } from "../shared/positioning";
 import { useMGPhase } from "../shared/useMGPhase";
 import type { QuoteCardProps } from "./types";
 
@@ -35,8 +36,33 @@ const CARD_PADDING_Y = 80;
 const CARD_WIDTH = 918; // ~85% of 1080
 const CARD_RADIUS = 8;
 const GIANT_MARK_SIZE = 340;
-const GIANT_MARK_OPACITY = 0.12;
 const ATTRIBUTION_GAP = 32;
+
+// Solid diagonal gradients — fully opaque, same palette as the rest of the
+// kit (LowerThird, SceneTitle) so the components read as one family. The
+// giant "‟" mark uses the quote text color by default (magazine pull-quote
+// convention) at a theme-specific opacity that reads the same on both
+// backgrounds: cream-on-dark is visible at 15%, ink-on-cream needs ~22%.
+const THEMES = {
+  dark: {
+    cardGradient:
+      "linear-gradient(135deg, #0A0A0A 0%, #141416 55%, #1C1C1F 100%)",
+    cardFallback: "#0F0F10",
+    quoteColor: "#F2E9D6",
+    attributionColor: "#A89888",
+    defaultAccent: "#F2E9D6",
+    markOpacity: 0.15,
+  },
+  light: {
+    cardGradient:
+      "linear-gradient(135deg, #F2E9D6 0%, #ECE2CB 55%, #E3D8BE 100%)",
+    cardFallback: "#ECE2CB",
+    quoteColor: "#16120E",
+    attributionColor: "#5A4E3D",
+    defaultAccent: "#C8551F",
+    markOpacity: 1,
+  },
+} as const;
 
 export const QuoteCard: React.FC<QuoteCardProps> = ({
   startMs,
@@ -45,13 +71,28 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
   exitFrames,
   quote,
   attribution,
-  cardColor = "#0A0A0A",
-  quoteColor = "#FFFFFF",
-  attributionColor = "#B8B8B8",
-  accentColor = "#FFD60A",
+  theme = "dark",
+  cardColor,
+  quoteColor,
+  attributionColor,
+  accentColor,
   quoteFont,
   quoteFontSize = 64,
+  anchor,
+  offsetX,
+  offsetY,
+  scale,
 }) => {
+  const palette = THEMES[theme];
+  const resolvedQuoteColor = quoteColor ?? palette.quoteColor;
+  const resolvedAttributionColor = attributionColor ?? palette.attributionColor;
+  const resolvedAccentColor = accentColor ?? palette.defaultAccent;
+  const { containerStyle, wrapperStyle } = resolveMGPosition({
+    anchor,
+    offsetX,
+    offsetY,
+    scale,
+  });
   const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
@@ -129,28 +170,26 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
   // --- Composed opacities -------------------------------------------------
 
   const cardOpacity = cardFadeIn * exitOpacity;
-  const marksOpacity = marksFadeIn * GIANT_MARK_OPACITY * exitOpacity;
+  const marksOpacity = marksFadeIn * palette.markOpacity * exitOpacity;
   const quoteOpacity = quoteFadeIn * quoteExitOpacity;
   const attributionOpacity = attributionFadeIn * exitOpacity;
 
   return (
-    <AbsoluteFill
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
+    <AbsoluteFill style={containerStyle}>
+      <div style={wrapperStyle}>
       <div
         style={{
           position: "relative",
           width: CARD_WIDTH,
-          backgroundColor: cardColor,
+          backgroundColor: cardColor ?? palette.cardFallback,
+          backgroundImage: cardColor ? undefined : palette.cardGradient,
           borderRadius: CARD_RADIUS,
           paddingLeft: CARD_PADDING_X,
           paddingRight: CARD_PADDING_X,
           paddingTop: CARD_PADDING_Y,
           paddingBottom: CARD_PADDING_Y,
-          boxShadow: "0 16px 48px rgba(0,0,0,0.4)",
+          boxShadow:
+            "0 18px 54px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3)",
           overflow: "visible",
           transform: `translateY(${exitDriftY}px) scale(${cardScale})`,
           opacity: cardOpacity,
@@ -160,14 +199,14 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
         <div
           style={{
             position: "absolute",
-            top: -60,
+            top: -90,
             left: 40,
             fontFamily: resolvedQuoteFont,
             fontStyle: "italic",
             fontWeight: 400,
             fontSize: GIANT_MARK_SIZE,
             lineHeight: 1,
-            color: accentColor,
+            color: resolvedAccentColor,
             opacity: marksOpacity,
             transform: `scale(${marksScale}) translateY(${marksParallaxY}px)`,
             transformOrigin: "top left",
@@ -190,7 +229,7 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
             fontSize: quoteFontSize,
             lineHeight: 1.25,
             letterSpacing: "-0.005em",
-            color: quoteColor,
+            color: resolvedQuoteColor,
             textAlign: "left",
             transform: `translateY(${quoteY}px)`,
             opacity: quoteOpacity,
@@ -209,13 +248,14 @@ export const QuoteCard: React.FC<QuoteCardProps> = ({
             fontWeight: 500,
             fontSize: 28,
             letterSpacing: "0.08em",
-            color: attributionColor,
+            color: resolvedAttributionColor,
             textAlign: "left",
             opacity: attributionOpacity,
           }}
         >
           {"\u2014 " + attribution}
         </div>
+      </div>
       </div>
     </AbsoluteFill>
   );

@@ -8,11 +8,9 @@ export const StatCardDemo: React.FC = () => {
       <StatCard
         value={500000}
         prefix="$"
-        label="REVENUE GENERATED IN 90 DAYS"
-        source="Source: Internal data, 2024"
-        cardStyle="dark"
+        label="In 90 days"
         startMs={400}
-        durationMs={5000}
+        durationMs={4500}
       />
     </MGDemoStage>
   );

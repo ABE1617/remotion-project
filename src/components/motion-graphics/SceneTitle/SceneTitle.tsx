@@ -1,5 +1,11 @@
 import React from "react";
-import { AbsoluteFill, interpolate, spring, useVideoConfig } from "remotion";
+import {
+  AbsoluteFill,
+  Easing,
+  interpolate,
+  spring,
+  useVideoConfig,
+} from "remotion";
 import { SPRING_SNAPPY } from "../../../utils/animations";
 import { FONT_FAMILIES } from "../../../utils/fonts";
 import { useMGPhase } from "../shared/useMGPhase";
@@ -11,8 +17,8 @@ import type { SceneTitleProps } from "./types";
 // ---------------------------------------------------------------------------
 //
 // Choreography (entrance @ 30fps, 18 frames total):
-//   0-8   panel clipPath wipe in (top→down, or bottom→up for half-bottom).
-//         Tight 8-frame spring to feel like a camera cut, not a fade.
+//   0-10  panel clipPath wipe in (top→down, or bottom→up for half-bottom).
+//         Cubic ease-out — no spring bounce on a full-screen color field.
 //   8-14  section label drops from translateY(-20) + fades.
 //   8-14  divider scaleX(0→1) from center origin.
 //   12-18 title slides from translateY(20) + fades.
@@ -20,14 +26,33 @@ import type { SceneTitleProps } from "./types";
 // Exit (12 frames) — mirrored but snappier and opposite direction:
 //   0-8   title drifts +20y fading.
 //   0-8   label + divider drift -15y fading.
-//   4-12  panel wipes out in the opposite direction to entrance.
+//   4-12  panel wipes out (cubic ease-in) in the opposite direction.
 
-const TITLE_SIZE = 140;
-const LABEL_SIZE = 36;
-const DIVIDER_WIDTH = 120;
+const TITLE_SIZE = 130;
+const LABEL_SIZE = 34;
+const DIVIDER_WIDTH = 100;
 const DIVIDER_HEIGHT = 2;
 const LABEL_TO_DIVIDER_GAP = 28;
 const DIVIDER_TO_TITLE_GAP = 32;
+
+// Solid diagonal gradients — fully opaque, add depth vs a flat color field.
+const THEMES = {
+  dark: {
+    panelGradient:
+      "linear-gradient(135deg, #0A0A0A 0%, #141416 55%, #1C1C1F 100%)",
+    panelFallback: "#0F0F10",
+    titleColor: "#F2E9D6",
+    labelColor: "#E8DFD0",
+  },
+  light: {
+    // Warm cream/bone — magazine cover feel.
+    panelGradient:
+      "linear-gradient(135deg, #F2E9D6 0%, #ECE2CB 55%, #E3D8BE 100%)",
+    panelFallback: "#ECE2CB",
+    titleColor: "#16120E",
+    labelColor: "#5A4E3D",
+  },
+} as const;
 
 export const SceneTitle: React.FC<SceneTitleProps> = ({
   startMs,
@@ -37,11 +62,15 @@ export const SceneTitle: React.FC<SceneTitleProps> = ({
   title,
   label,
   variant = "full",
-  accentColor = "#FF3B30",
-  titleColor = "#FFFFFF",
-  labelColor = "#FFFFFF",
+  theme = "dark",
+  accentColor = "#C8551F",
+  titleColor,
+  labelColor,
   showDivider = true,
 }) => {
+  const palette = THEMES[theme];
+  const resolvedTitleColor = titleColor ?? palette.titleColor;
+  const resolvedLabelColor = labelColor ?? palette.labelColor;
   const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
@@ -77,24 +106,21 @@ export const SceneTitle: React.FC<SceneTitleProps> = ({
   //           entered from's opposite.
   // ------------------------------------------------------------------------
 
-  const panelEnterSpring = spring({
-    fps,
-    frame: localFrame,
-    config: SPRING_SNAPPY,
-    durationInFrames: 8,
+  // Smooth cubic ease-out — no spring bounce on the full-screen panel.
+  // Slightly longer (10f) than the original 8f spring so the sweep feels
+  // gracious rather than snappy.
+  const entranceClip = interpolate(localFrame, [0, 10], [100, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.cubic),
   });
 
-  // Entrance clip percentages (0 = fully revealed, 100 = fully hidden).
-  // For top-down wipe, the BOTTOM inset starts at 100% and shrinks to 0%.
-  // For bottom-up wipe, the TOP inset starts at 100% and shrinks to 0%.
-  const entranceClip = interpolate(panelEnterSpring, [0, 1], [100, 0]);
-
-  // Exit wipe — starts at frame (durationFrames - exitFrames) + 4 for a
-  // 4-frame stagger vs. text. Runs 8 frames. We drive it from exitProgress
-  // remapped: 0..0.33 = still fully visible, 0.33..1 = wiping out.
+  // Exit wipe — 4-frame stagger vs. text, cubic ease-in so the panel
+  // accelerates off rather than leaving linearly.
   const exitWipe = interpolate(exitProgress, [0.33, 1], [0, 100], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
+    easing: Easing.in(Easing.cubic),
   });
 
   // Build clipPath per variant + phase.
@@ -200,7 +226,8 @@ export const SceneTitle: React.FC<SceneTitleProps> = ({
         style={{
           position: "absolute",
           ...panelStyle,
-          backgroundColor: accentColor,
+          backgroundColor: palette.panelFallback,
+          backgroundImage: palette.panelGradient,
           clipPath,
           WebkitClipPath: clipPath,
           display: "flex",
@@ -217,7 +244,7 @@ export const SceneTitle: React.FC<SceneTitleProps> = ({
               fontFamily: FONT_FAMILIES.inter,
               fontSize: LABEL_SIZE,
               fontWeight: 600,
-              color: labelColor,
+              color: resolvedLabelColor,
               letterSpacing: "0.28em",
               textTransform: "uppercase",
               lineHeight: 1,
@@ -238,7 +265,7 @@ export const SceneTitle: React.FC<SceneTitleProps> = ({
             style={{
               width: DIVIDER_WIDTH,
               height: DIVIDER_HEIGHT,
-              backgroundColor: labelColor,
+              backgroundColor: accentColor,
               transform: `translateY(${dividerY}px) scaleX(${dividerScaleEnter})`,
               transformOrigin: "center",
               opacity: dividerOpacity,
@@ -249,12 +276,12 @@ export const SceneTitle: React.FC<SceneTitleProps> = ({
 
         <div
           style={{
-            fontFamily: FONT_FAMILIES.anton,
+            fontFamily: FONT_FAMILIES.dmSerifDisplay,
             fontSize: TITLE_SIZE,
             fontWeight: 400,
-            color: titleColor,
-            lineHeight: 0.92,
-            letterSpacing: "-0.01em",
+            color: resolvedTitleColor,
+            lineHeight: 0.98,
+            letterSpacing: "0.01em",
             textTransform: "uppercase",
             textAlign: "center",
             whiteSpace: "pre-line",

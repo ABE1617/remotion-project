@@ -1,18 +1,23 @@
 import type { MGTimingProps } from "../shared/types";
+import type { MGPositionProps } from "../shared/positioning";
 
-export interface QuoteCardProps extends MGTimingProps {
+export interface QuoteCardProps extends MGTimingProps, MGPositionProps {
   quote: string;
   // e.g. "Steve Jobs, 2005" — rendered beneath the quote, prefixed with em-dash.
   attribution: string;
-  // Default "#0A0A0A". Must remain fully opaque — client rejects semi-transparent backgrounds.
+  // "dark" (default) → ink-black gradient card with warm cream type.
+  // "light" → cream/bone gradient card with warm ink type.
+  theme?: "dark" | "light";
+  // Optional solid card color override (disables the theme gradient).
   cardColor?: string;
-  // Default "#FFFFFF".
+  // Quote text color. Defaults to the theme's title color.
   quoteColor?: string;
-  // Default "#B8B8B8".
+  // Attribution color. Defaults to the theme's attribution color.
   attributionColor?: string;
-  // Default "#FFD60A" — drives the giant decorative quote-mark color.
+  // Color of the oversized decorative quote mark. Default warm cream
+  // ("#F2E9D6") on dark, warm rust ("#C8551F") on light.
   accentColor?: string;
-  // Defaults to FONT_FAMILIES.playfairDisplay. Caller can override for other editorial serifs.
+  // Defaults to FONT_FAMILIES.playfairDisplay.
   quoteFont?: string;
   // Default 64. Callers can shrink for longer quotes.
   quoteFontSize?: number;

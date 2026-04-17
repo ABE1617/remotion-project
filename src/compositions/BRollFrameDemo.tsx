@@ -7,13 +7,17 @@ export const BRollFrameDemo: React.FC = () => {
   return (
     <MGDemoStage>
       <BRollFrame
-        src={staticFile("stage.jpg")}
+        src={[
+          staticFile("stage.jpg"),
+          staticFile("stage.jpg"),
+          staticFile("stage.jpg"),
+        ]}
         mediaType="image"
         aspectRatio="4:5"
         width={620}
-        position="center"
+        anchor="center"
         variant="polaroid"
-        caption="Stage I, 2024"
+        caption={["Stage I, 2023", "Stage II, 2024", "Stage III, 2025"]}
         startMs={400}
         durationMs={4000}
       />

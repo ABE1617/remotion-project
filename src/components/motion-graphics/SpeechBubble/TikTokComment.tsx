@@ -2,6 +2,7 @@ import React from "react";
 import { AbsoluteFill, spring, useVideoConfig } from "remotion";
 import { SPRING_SNAPPY } from "../../../utils/animations";
 import { FONT_FAMILIES } from "../../../utils/fonts";
+import { resolveMGPosition } from "../shared/positioning";
 import { useMGPhase } from "../shared/useMGPhase";
 import { HeartIcon } from "./icons";
 import { Avatar, composeBubbleTransform, formatCount } from "./shared";
@@ -20,7 +21,10 @@ export const TikTokComment: React.FC<TikTokCommentProps> = ({
   durationMs,
   enterFrames,
   exitFrames,
-  position,
+  anchor,
+  offsetX,
+  offsetY,
+  scale,
   width = 620,
   avatarSrc,
   initials,
@@ -29,6 +33,10 @@ export const TikTokComment: React.FC<TikTokCommentProps> = ({
   comment,
   likes,
 }) => {
+  const { containerStyle, wrapperStyle } = resolveMGPosition(
+    { anchor, offsetX, offsetY, scale },
+    { anchor: "top", offsetY: 820 },
+  );
   const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
@@ -48,16 +56,11 @@ export const TikTokComment: React.FC<TikTokCommentProps> = ({
     exitProgress,
   );
 
-  const left = position ? position.x : (1080 - width) / 2;
-  const top = position ? position.y : 820;
-
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={containerStyle}>
+      <div style={wrapperStyle}>
       <div
         style={{
-          position: "absolute",
-          left,
-          top,
           width,
           transform,
           opacity,
@@ -142,6 +145,7 @@ export const TikTokComment: React.FC<TikTokCommentProps> = ({
             {formatCount(likes)}
           </div>
         </div>
+      </div>
       </div>
     </AbsoluteFill>
   );

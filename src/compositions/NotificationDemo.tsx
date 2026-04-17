@@ -7,13 +7,31 @@ export const NotificationDemo: React.FC = () => {
     <MGDemoStage>
       <Notification
         platform="ios"
-        app="apple-pay"
-        appName="Apple Pay"
-        timestamp="now"
-        title="Payment Received"
-        body="$5,000.00 from Stripe Inc."
-        startMs={500}
-        durationMs={4000}
+        notifications={[
+          {
+            app: "stripe",
+            appName: "Stripe",
+            timestamp: "now",
+            title: "Payment Received",
+            body: "$5,000.00 — Customer: Acme Media",
+          },
+          {
+            app: "apple-pay",
+            appName: "Apple Pay",
+            timestamp: "1m ago",
+            title: "Payment Sent",
+            body: "$42.80 to Blue Bottle Coffee",
+          },
+          {
+            app: "imessage",
+            appName: "Messages",
+            timestamp: "2m ago",
+            title: "Sarah",
+            body: "Great work on the launch today — congrats!",
+          },
+        ]}
+        startMs={400}
+        durationMs={6500}
       />
     </MGDemoStage>
   );

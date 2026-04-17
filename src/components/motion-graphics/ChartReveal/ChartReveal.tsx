@@ -1,54 +1,51 @@
 import React from "react";
-import {
-  AbsoluteFill,
-  interpolate,
-  spring,
-  useVideoConfig,
-} from "remotion";
+import { AbsoluteFill, interpolate, spring, useVideoConfig } from "remotion";
 import { SPRING_SNAPPY } from "../../../utils/animations";
 import { FONT_FAMILIES } from "../../../utils/fonts";
+import { resolveMGPosition } from "../shared/positioning";
 import { useMGPhase } from "../shared/useMGPhase";
 import type { ChartRevealProps, DataPoint } from "./types";
 
 // ---------------------------------------------------------------------------
-// ChartReveal — premium animated chart (line or bar).
+// ChartReveal — no-card animated bar / line chart.
 // ---------------------------------------------------------------------------
 //
-// Line choreography (entrance, ~34 frames):
-//   0-4    card scales 0.97→1 + fades in
-//   4-8    title fades + drifts translateY(8→0)
-//   8-22   line path draws via stroke-dashoffset (ease-out cubic, lands softly)
-//   22-30  gradient fill under line fades in (only if fillBelow)
-//   22-28  first+last axis labels fade in
-//   28-34  highlight callout scales in with SPRING_SNAPPY
+// Based on the viral short-form pattern: no dashboard chrome, bold title up
+// top, value labels stamped above each bar that COUNT UP as the bar grows,
+// minimal category labels below. Sits directly on the video with drop
+// shadows for readability. Same language as StatCard.
 //
-// Bar choreography (entrance, varies with bar count):
-//   0-4    card scales 0.97→1 + fades in
-//   4-8    title fades + drifts translateY(8→0)
-//   8+     bars grow bottom→up via scaleY spring, 3-frame stagger
-//   after  axis labels + highlight callout
+// Bar choreography (entrance, 34 frames):
+//   0-6    title fades + drifts translateY(8→0)
+//   8+     bars grow from bottom (SPRING_SNAPPY, 4-frame stagger per bar)
+//          value on top of each bar counts up in sync with its growth
+//   after  category labels fade in
+//   after  optional peak callout scales in on the highlighted bar
 //
-// Hold: completely static.
+// Line choreography (entrance, 34 frames):
+//   0-6    title
+//   8-22   line draws via stroke-dashoffset (ease-out cubic)
+//   20-28  dot markers scale in per-point (staggered)
+//   22-28  first + last category labels fade
+//   26-34  peak callout scales in (if highlight)
 //
-// Exit (14 frames): whole card scales 1→0.96 + fades to 0.
-//
-// Smoothing: Catmull-Rom → cubic Bezier with tension 0.5. The segment-by-
-// segment tangents give us a naturally smooth curve through every data point
-// without the overshoot you get from quadratic splines or monotone Hermite.
-// Path length is computed analytically by sampling 32 points per cubic segment
-// and summing chord distances — no getTotalLength() DOM round-trip needed.
+// Exit (12 frames): everything drifts up + fades.
 
-const CARD_RADIUS = 16;
-const CARD_PADDING_X = 56;
-const CARD_PADDING_Y = 64;
-const TITLE_GAP = 24;
-const AXIS_LABEL_GAP = 20;
+const TITLE_GAP = 32;
+const VALUE_LABEL_GAP = 14;
+const CATEGORY_LABEL_GAP = 16;
+const TEXT_SHADOW =
+  "0 2px 8px rgba(0,0,0,0.85), 0 10px 28px rgba(0,0,0,0.5)";
+const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+
+// ---------------------------------------------------------------------------
+// Geometry helpers (line chart only — Catmull-Rom → cubic Bezier smoothing)
+// ---------------------------------------------------------------------------
 
 interface Pt {
   x: number;
   y: number;
 }
-
 interface CubicSegment {
   p0: Pt;
   p1: Pt;
@@ -56,7 +53,6 @@ interface CubicSegment {
   p3: Pt;
 }
 
-// Cubic Bezier point at t.
 function cubicPoint(p0: Pt, p1: Pt, p2: Pt, p3: Pt, t: number): Pt {
   const mt = 1 - t;
   const mt2 = mt * mt;
@@ -70,15 +66,7 @@ function cubicPoint(p0: Pt, p1: Pt, p2: Pt, p3: Pt, t: number): Pt {
     y: a * p0.y + b * p1.y + c * p2.y + d * p3.y,
   };
 }
-
-// Arc length of a single cubic by chord sampling.
-function cubicLength(
-  p0: Pt,
-  p1: Pt,
-  p2: Pt,
-  p3: Pt,
-  samples = 32,
-): number {
+function cubicLength(p0: Pt, p1: Pt, p2: Pt, p3: Pt, samples = 24): number {
   let len = 0;
   let prev = p0;
   for (let i = 1; i <= samples; i++) {
@@ -91,37 +79,27 @@ function cubicLength(
   }
   return len;
 }
-
-// Catmull-Rom → cubic Bezier control-point conversion.
-// Returns an array of cubic segments (one per consecutive pair of points).
-// Boundary handling: for i=0 we use P[0] as the "previous" tangent anchor;
-// for i=N-1 we use P[N-1] as the "next" tangent anchor. Tension 0.5 gives
-// a designed-looking curve without overshoot.
-function buildCatmullRomCubics(points: Pt[], tension = 0.5): CubicSegment[] {
+function buildCatmullRom(points: Pt[], tension = 0.5): CubicSegment[] {
   const segments: CubicSegment[] = [];
   if (points.length < 2) return segments;
-
   const tangent = (prev: Pt, next: Pt): Pt => ({
     x: ((next.x - prev.x) / 2) * tension,
     y: ((next.y - prev.y) / 2) * tension,
   });
-
   for (let i = 0; i < points.length - 1; i++) {
     const p0 = points[i];
     const p1 = points[i + 1];
     const prevAnchor = i === 0 ? points[0] : points[i - 1];
-    const nextAnchor = i + 2 >= points.length ? points[i + 1] : points[i + 2];
+    const nextAnchor =
+      i + 2 >= points.length ? points[i + 1] : points[i + 2];
     const t0 = tangent(prevAnchor, p1);
     const t1 = tangent(p0, nextAnchor);
     const c1: Pt = { x: p0.x + t0.x, y: p0.y + t0.y };
     const c2: Pt = { x: p1.x - t1.x, y: p1.y - t1.y };
     segments.push({ p0, p1: c1, p2: c2, p3: p1 });
   }
-
   return segments;
 }
-
-// Serialize cubic segments into an SVG path `d` string.
 function cubicsToPath(segments: CubicSegment[]): string {
   if (segments.length === 0) return "";
   const first = segments[0];
@@ -134,68 +112,40 @@ function cubicsToPath(segments: CubicSegment[]): string {
   }
   return d;
 }
-
-// Total arc length = sum of per-segment cubic lengths.
 function totalCubicLength(segments: CubicSegment[]): number {
   let sum = 0;
-  for (const s of segments) {
-    sum += cubicLength(s.p0, s.p1, s.p2, s.p3, 32);
-  }
+  for (const s of segments) sum += cubicLength(s.p0, s.p1, s.p2, s.p3, 24);
   return sum;
 }
 
-interface Palette {
-  bg: string;
-  title: string;
-  axis: string;
-  shadow: string;
-  calloutText: string;
-}
-
-const getPalette = (style: "light" | "dark"): Palette => {
-  if (style === "dark") {
-    return {
-      bg: "#0A0A0A",
-      title: "#F5F5F5",
-      axis: "#9A9A9A",
-      shadow: "0 16px 48px rgba(0,0,0,0.5)",
-      calloutText: "#FFFFFF",
-    };
-  }
-  return {
-    bg: "#F8F7F4",
-    title: "#0A0A0A",
-    axis: "#6B6B6B",
-    shadow: "0 16px 48px rgba(0,0,0,0.2)",
-    calloutText: "#FFFFFF",
-  };
-};
-
-// Map raw data values into plot-area pixel coordinates (top-left origin SVG).
-function mapPoints(
-  data: DataPoint[],
-  plotW: number,
-  plotH: number,
-): Pt[] {
+function mapLinePoints(data: DataPoint[], plotW: number, plotH: number): Pt[] {
   if (data.length === 0) return [];
   const values = data.map((d) => d.value);
   const minV = Math.min(...values);
   const maxV = Math.max(...values);
-  // Pad the range slightly so the line never hugs the top/bottom edge.
   const pad = (maxV - minV) * 0.1 || 1;
   const lo = minV - pad;
   const hi = maxV + pad;
   const range = hi - lo || 1;
-
   if (data.length === 1) {
     return [{ x: plotW / 2, y: plotH - ((data[0].value - lo) / range) * plotH }];
   }
+  return data.map((d, i) => ({
+    x: (i / (data.length - 1)) * plotW,
+    y: plotH - ((d.value - lo) / range) * plotH,
+  }));
+}
 
-  return data.map((d, i) => {
-    const x = (i / (data.length - 1)) * plotW;
-    const y = plotH - ((d.value - lo) / range) * plotH;
-    return { x, y };
-  });
+function formatValue(
+  value: number,
+  prefix: string,
+  suffix: string,
+  decimals: number,
+): string {
+  const rounded = decimals > 0
+    ? value.toFixed(decimals)
+    : Math.round(value).toLocaleString();
+  return `${prefix}${rounded}${suffix}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -207,113 +157,64 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
   durationMs,
   enterFrames,
   exitFrames,
-  chartType = "line",
+  chartType = "bar",
   data,
   title,
-  width = 720,
-  height = 480,
-  cardStyle = "light",
-  accentColor = "#FF3B30",
-  fillBelow = false,
+  prefix = "",
+  suffix = "",
+  decimals = 0,
+  width = 900,
+  height = 560,
+  accentColor = "#C8551F",
   highlight,
+  anchor,
+  offsetX,
+  offsetY,
+  scale,
 }) => {
+  const { containerStyle, wrapperStyle } = resolveMGPosition({
+    anchor,
+    offsetX,
+    offsetY,
+    scale,
+  });
   const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
-    { defaultEnterFrames: 36, defaultExitFrames: 14 },
+    { defaultEnterFrames: 40, defaultExitFrames: 12 },
   );
 
-  const palette = getPalette(cardStyle);
+  if (!visible) return null;
 
-  // Plot area = card interior minus horizontal padding. Chart SVG height is
-  // the configured `height` plus space for axis labels beneath.
-  const plotW = width - CARD_PADDING_X * 2;
-  const plotH = height;
+  // --- Shared exit ---------------------------------------------------------
+  const exitDriftY = exitProgress * -16;
+  const exitOpacity = 1 - exitProgress;
 
-  // --- Geometry (computed every render; cheap & deterministic) -----------
-
-  const points = mapPoints(data, plotW, plotH);
-
-  // Line chart: build smoothed cubic Bezier path + compute analytical length.
-  const segments = chartType === "line" ? buildCatmullRomCubics(points) : [];
-  const linePathD = cubicsToPath(segments);
-  const pathLength = totalCubicLength(segments);
-
-  // Closed fill shape: trace the line then drop to bottom-right → bottom-left → close.
-  const fillPathD =
-    segments.length > 0
-      ? linePathD +
-        ` L ${plotW.toFixed(2)} ${plotH.toFixed(2)}` +
-        ` L 0 ${plotH.toFixed(2)} Z`
-      : "";
-
-  // Bar geometry: evenly spaced with a 24% gap between bars.
-  const barCount = chartType === "bar" ? data.length : 0;
-  const barSlot = barCount > 0 ? plotW / barCount : 0;
-  const barWidth = barSlot * 0.76;
-  const barGap = barSlot * 0.24;
-  // Compute bar heights using the same min/max scaling as line charts so the
-  // "growing" effect uses real data proportions.
-  const barScale = (() => {
-    if (chartType !== "bar" || data.length === 0) return { lo: 0, hi: 1 };
-    const values = data.map((d) => d.value);
-    const minV = Math.min(...values);
-    const maxV = Math.max(...values);
-    // For bar charts we anchor the baseline at 0 if all values are positive —
-    // bars growing from a non-zero floor feels dishonest.
-    const lo = Math.min(0, minV);
-    const hi = maxV === lo ? lo + 1 : maxV;
-    return { lo, hi };
-  })();
-  const barFullHeight = (value: number): number => {
-    if (chartType !== "bar") return 0;
-    return ((value - barScale.lo) / (barScale.hi - barScale.lo)) * plotH;
-  };
-
-  // --- Entrance timings --------------------------------------------------
-
-  // Card (0-4).
-  const cardEnterSpring = spring({
-    fps,
-    frame: localFrame,
-    config: SPRING_SNAPPY,
-    durationInFrames: 4,
+  // --- Title (frames 0-6) --------------------------------------------------
+  const titleFadeIn = interpolate(localFrame, [0, 6], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
   });
-  const cardEnterScale = interpolate(cardEnterSpring, [0, 1], [0.97, 1]);
-  const cardFadeIn = interpolate(localFrame, [0, 4], [0, 1], {
+  const titleY = interpolate(localFrame, [0, 6], [8, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  // Title (4-8).
-  const titleFadeIn = interpolate(localFrame, [4, 8], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const titleY = interpolate(localFrame, [4, 8], [8, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // Line draw (8-22) — ease-out cubic on the dashoffset.
-  const drawInRaw = interpolate(localFrame, [8, 22], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const drawInEased = 1 - Math.pow(1 - drawInRaw, 3);
-  const dashOffset = pathLength * (1 - drawInEased);
-
-  // Fill fade-in (22-30).
-  const fillOpacity = interpolate(localFrame, [22, 30], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // --- Bar entrance per-bar (staggered) ---------------------------------
-  // Each bar starts 3 frames after the previous, springs scaleY 0→1.
+  // --- BAR CHART -----------------------------------------------------------
   const BAR_START = 8;
-  const BAR_STAGGER = 3;
-  const BAR_SPRING_FRAMES = 12;
+  const BAR_STAGGER = 4;
+  const BAR_SPRING_FRAMES = 14;
+  const barCount = chartType === "bar" ? data.length : 0;
+  const barSlot = barCount > 0 ? width / barCount : 0;
+  const barWidth = barSlot * 0.7;
+  const barGap = barSlot * 0.3;
+
+  // Bars grow from 0 → max.
+  const barMax =
+    barCount > 0 ? Math.max(...data.map((d) => Math.max(0, d.value))) : 1;
+  const barScale = (value: number): number =>
+    barMax > 0 ? (Math.max(0, value) / barMax) * height : 0;
+
   const barSpringValues: number[] =
     chartType === "bar"
       ? data.map((_, i) =>
@@ -326,22 +227,35 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
         )
       : [];
 
-  // When all bars have landed: BAR_START + (N-1)*stagger + settle.
   const lastBarLanded =
     chartType === "bar"
-      ? BAR_START + (data.length - 1) * BAR_STAGGER + 6
-      : 22;
+      ? BAR_START + (data.length - 1) * BAR_STAGGER + BAR_SPRING_FRAMES
+      : 28;
 
-  // Axis labels window — unified for both chart types.
-  const axisStart = chartType === "bar" ? lastBarLanded + 4 : 22;
-  const axisEnd = axisStart + 6;
-  const axisFadeIn = interpolate(localFrame, [axisStart, axisEnd], [0, 1], {
+  // --- LINE CHART ----------------------------------------------------------
+  const linePoints =
+    chartType === "line" ? mapLinePoints(data, width, height) : [];
+  const lineSegments =
+    chartType === "line" ? buildCatmullRom(linePoints) : [];
+  const linePathD = cubicsToPath(lineSegments);
+  const linePathLength = totalCubicLength(lineSegments);
+  const lineDrawRaw = interpolate(localFrame, [8, 22], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  const lineDrawEased = easeOutCubic(lineDrawRaw);
+  const lineDashOffset = linePathLength * (1 - lineDrawEased);
+
+  // --- Category labels -----------------------------------------------------
+  const labelStart = chartType === "bar" ? lastBarLanded + 2 : 22;
+  const labelEnd = labelStart + 8;
+  const categoryFadeIn = interpolate(localFrame, [labelStart, labelEnd], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
 
-  // Highlight callout — last thing to arrive.
-  const calloutStart = chartType === "bar" ? axisEnd + 2 : 28;
+  // --- Peak callout --------------------------------------------------------
+  const calloutStart = labelEnd + 2;
   const calloutSpring = spring({
     fps,
     frame: localFrame - calloutStart,
@@ -356,133 +270,75 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  // --- Exit --------------------------------------------------------------
+  const highlightIndex = highlight?.index ?? -1;
+  const highlightDataPoint =
+    highlightIndex >= 0 && highlightIndex < data.length
+      ? data[highlightIndex]
+      : null;
+  const highlightLabel = highlightDataPoint
+    ? highlight?.label ??
+      formatValue(highlightDataPoint.value, prefix, suffix, decimals)
+    : "";
 
-  const exitScale = interpolate(exitProgress, [0, 1], [1, 0.96]);
-  const exitOpacity = 1 - exitProgress;
-
-  const cardScale = cardEnterScale * exitScale;
-  const cardOpacity = cardFadeIn * exitOpacity;
-
-  if (!visible) return null;
-
-  // --- Highlight resolved marker position -------------------------------
-
-  let highlightPt: Pt | null = null;
-  if (highlight && highlight.index >= 0 && highlight.index < data.length) {
-    if (chartType === "line") {
-      highlightPt = points[highlight.index] ?? null;
-    } else {
-      // Bar: center on top of the bar.
-      const cx = highlight.index * barSlot + barSlot / 2;
-      const cy = plotH - barFullHeight(data[highlight.index].value);
-      highlightPt = { x: cx, y: cy };
-    }
-  }
-
-  // SVG viewBox spans the plot area plus a small vertical margin so a marker
-  // dot at y=0 doesn't clip.
+  // --- SVG sizing ----------------------------------------------------------
   const svgPadTop = 4;
   const svgPadBottom = 4;
-  const svgW = plotW;
-  const svgH = plotH + svgPadTop + svgPadBottom;
-
-  // Unique gradient id per-instance (per-accent) — avoids collisions if the
-  // component renders twice on the same frame with different accent colors.
-  const gradientId = `chart-reveal-fill-${accentColor.replace(/[^a-z0-9]/gi, "")}`;
+  const svgW = width;
+  const svgH = height + svgPadTop + svgPadBottom;
 
   return (
-    <AbsoluteFill
-      style={{
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
+    <AbsoluteFill style={containerStyle}>
+      <div style={wrapperStyle}>
       <div
         style={{
           width,
-          backgroundColor: palette.bg,
-          borderRadius: CARD_RADIUS,
-          paddingLeft: CARD_PADDING_X,
-          paddingRight: CARD_PADDING_X,
-          paddingTop: CARD_PADDING_Y,
-          paddingBottom: CARD_PADDING_Y,
-          boxShadow: palette.shadow,
-          transform: `scale(${cardScale})`,
-          opacity: cardOpacity,
+          transform: `translateY(${exitDriftY}px)`,
+          opacity: exitOpacity,
           display: "flex",
           flexDirection: "column",
-          boxSizing: "border-box",
+          alignItems: "center",
         }}
       >
         {title ? (
           <div
             style={{
-              fontFamily: FONT_FAMILIES.inter,
-              fontSize: 28,
-              fontWeight: 600,
-              color: palette.title,
-              letterSpacing: "0.02em",
-              textAlign: "left",
-              lineHeight: 1.1,
+              fontFamily: FONT_FAMILIES.anton,
+              fontSize: 64,
+              fontWeight: 400,
+              color: "#FFFFFF",
+              letterSpacing: "0.01em",
+              textTransform: "uppercase",
+              lineHeight: 1,
               marginBottom: TITLE_GAP,
               opacity: titleFadeIn,
               transform: `translateY(${titleY}px)`,
+              textShadow: TEXT_SHADOW,
+              textAlign: "center",
             }}
           >
             {title}
           </div>
         ) : null}
 
-        {/* Chart SVG */}
-        <div style={{ position: "relative", width: "100%" }}>
+        {/* Chart SVG area — relative so HTML value labels can overlay */}
+        <div style={{ position: "relative", width, height }}>
           <svg
             width={svgW}
             height={svgH}
             viewBox={`0 ${-svgPadTop} ${svgW} ${svgH}`}
-            style={{ display: "block", overflow: "visible" }}
+            style={{
+              display: "block",
+              overflow: "visible",
+              filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.45))",
+            }}
           >
-            {/* Gradient def for line fill */}
-            {chartType === "line" && fillBelow ? (
-              <defs>
-                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={accentColor} stopOpacity={0.4} />
-                  <stop offset="100%" stopColor={accentColor} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-            ) : null}
-
-            {/* LINE CHART --------------------------------------------- */}
-            {chartType === "line" && segments.length > 0 ? (
-              <>
-                {fillBelow ? (
-                  <path
-                    d={fillPathD}
-                    fill={`url(#${gradientId})`}
-                    opacity={fillOpacity}
-                  />
-                ) : null}
-                <path
-                  d={linePathD}
-                  fill="none"
-                  stroke={accentColor}
-                  strokeWidth={6}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeDasharray={pathLength}
-                  strokeDashoffset={dashOffset}
-                />
-              </>
-            ) : null}
-
-            {/* BAR CHART ---------------------------------------------- */}
             {chartType === "bar"
               ? data.map((d, i) => {
-                  const full = barFullHeight(d.value);
-                  const sp = barSpringValues[i] ?? 0;
-                  const scaleY = Math.max(0, sp);
+                  const full = barScale(d.value);
+                  const sp = Math.max(0, barSpringValues[i] ?? 0);
                   const x = i * barSlot + barGap / 2;
-                  const y = plotH - full;
+                  const y = height - full;
+                  const isPeak = i === highlightIndex;
                   return (
                     <rect
                       key={i}
@@ -490,12 +346,12 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
                       y={y}
                       width={barWidth}
                       height={full}
-                      rx={8}
-                      ry={8}
-                      fill={accentColor}
+                      rx={10}
+                      ry={10}
+                      fill={isPeak ? "#FFFFFF" : accentColor}
                       style={{
-                        transform: `scaleY(${scaleY})`,
-                        transformOrigin: `${(x + barWidth / 2).toFixed(2)}px ${plotH}px`,
+                        transform: `scaleY(${sp})`,
+                        transformOrigin: `${(x + barWidth / 2).toFixed(2)}px ${height}px`,
                         transformBox: "view-box",
                       }}
                     />
@@ -503,115 +359,129 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
                 })
               : null}
 
-            {/* HIGHLIGHT MARKER DOT --------------------------------- */}
-            {highlightPt ? (
-              <circle
-                cx={highlightPt.x}
-                cy={highlightPt.y}
-                r={10}
-                fill={accentColor}
-                stroke={palette.bg}
-                strokeWidth={3}
-                opacity={calloutFadeIn}
-                style={{
-                  transform: `scale(${calloutScale})`,
-                  transformOrigin: `${highlightPt.x.toFixed(2)}px ${highlightPt.y.toFixed(2)}px`,
-                  transformBox: "view-box",
-                }}
+            {chartType === "line" && lineSegments.length > 0 ? (
+              <path
+                d={linePathD}
+                fill="none"
+                stroke={accentColor}
+                strokeWidth={8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray={linePathLength}
+                strokeDashoffset={lineDashOffset}
               />
             ) : null}
+
+            {chartType === "line"
+              ? linePoints.map((pt, i) => {
+                  // Dot markers fade + scale in after the line passes them.
+                  const markerStart = 8 + (i / Math.max(1, linePoints.length - 1)) * 14 + 2;
+                  const markerSpring = spring({
+                    fps,
+                    frame: localFrame - markerStart,
+                    config: SPRING_SNAPPY,
+                    durationInFrames: 6,
+                  });
+                  const markerScale = Math.max(0, markerSpring);
+                  const isPeak = i === highlightIndex;
+                  return (
+                    <circle
+                      key={i}
+                      cx={pt.x}
+                      cy={pt.y}
+                      r={isPeak ? 14 : 9}
+                      fill={isPeak ? "#FFFFFF" : accentColor}
+                      stroke={isPeak ? accentColor : "#FFFFFF"}
+                      strokeWidth={isPeak ? 5 : 0}
+                      style={{
+                        transform: `scale(${markerScale})`,
+                        transformOrigin: `${pt.x.toFixed(2)}px ${pt.y.toFixed(2)}px`,
+                        transformBox: "view-box",
+                      }}
+                    />
+                  );
+                })
+              : null}
           </svg>
 
-          {/* HIGHLIGHT LABEL BOX (HTML overlay so text rendering stays crisp) */}
-          {highlightPt && highlight ? (
+          {/* VALUE LABELS — above each bar, count up with bar growth */}
+          {chartType === "bar"
+            ? data.map((d, i) => {
+                const sp = Math.max(0, Math.min(1, barSpringValues[i] ?? 0));
+                const full = barScale(d.value);
+                const animatedValue = d.value * sp;
+                const display = formatValue(
+                  animatedValue,
+                  prefix,
+                  suffix,
+                  decimals,
+                );
+                const x = i * barSlot + barSlot / 2;
+                // Top of bar = height - full*sp; label sits above that.
+                const labelY = height - full * sp - VALUE_LABEL_GAP;
+                const isPeak = i === highlightIndex;
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      position: "absolute",
+                      left: x,
+                      top: labelY,
+                      transform: "translate(-50%, -100%)",
+                      fontFamily: FONT_FAMILIES.anton,
+                      fontSize: isPeak ? 48 : 36,
+                      fontWeight: 400,
+                      color: isPeak ? "#FFFFFF" : "#F2E9D6",
+                      letterSpacing: "-0.01em",
+                      lineHeight: 1,
+                      whiteSpace: "nowrap",
+                      fontVariantNumeric: "tabular-nums",
+                      opacity: sp,
+                      textShadow: TEXT_SHADOW,
+                    }}
+                  >
+                    {display}
+                  </div>
+                );
+              })
+            : null}
+
+          {/* PEAK CALLOUT for line charts — floats near the highlighted dot */}
+          {chartType === "line" && highlightDataPoint ? (
             <div
               style={{
                 position: "absolute",
-                left: highlightPt.x,
-                top: highlightPt.y - 18,
+                left: linePoints[highlightIndex]?.x ?? 0,
+                top: (linePoints[highlightIndex]?.y ?? 0) - 24,
                 transform: `translate(-50%, -100%) scale(${calloutScale})`,
                 transformOrigin: "50% 100%",
                 opacity: calloutFadeIn,
-                pointerEvents: "none",
+                fontFamily: FONT_FAMILIES.anton,
+                fontSize: 72,
+                fontWeight: 400,
+                color: "#FFFFFF",
+                letterSpacing: "-0.01em",
+                lineHeight: 1,
+                whiteSpace: "nowrap",
+                textShadow: TEXT_SHADOW,
+                fontVariantNumeric: "tabular-nums",
               }}
             >
-              <div
-                style={{
-                  backgroundColor: accentColor,
-                  color: palette.calloutText,
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  fontFamily: FONT_FAMILIES.inter,
-                  fontSize: 22,
-                  fontWeight: 600,
-                  lineHeight: 1,
-                  whiteSpace: "nowrap",
-                  position: "relative",
-                }}
-              >
-                {highlight.label}
-                {/* Downward-pointing triangle pointer */}
-                <div
-                  style={{
-                    position: "absolute",
-                    left: "50%",
-                    bottom: -6,
-                    transform: "translateX(-50%)",
-                    width: 0,
-                    height: 0,
-                    borderLeft: "7px solid transparent",
-                    borderRight: "7px solid transparent",
-                    borderTop: `7px solid ${accentColor}`,
-                  }}
-                />
-              </div>
+              {highlightLabel}
             </div>
           ) : null}
         </div>
 
-        {/* Axis labels */}
+        {/* CATEGORY LABELS ROW */}
         <div
           style={{
             position: "relative",
-            marginTop: AXIS_LABEL_GAP,
             width: "100%",
-            height: 24,
-            opacity: axisFadeIn,
+            marginTop: CATEGORY_LABEL_GAP,
+            height: 28,
+            opacity: categoryFadeIn,
           }}
         >
-          {chartType === "line" && data.length > 0 ? (
-            <>
-              <div
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  fontFamily: FONT_FAMILIES.inter,
-                  fontSize: 22,
-                  fontWeight: 500,
-                  color: palette.axis,
-                  lineHeight: 1,
-                }}
-              >
-                {data[0].label ?? ""}
-              </div>
-              <div
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: 0,
-                  fontFamily: FONT_FAMILIES.inter,
-                  fontSize: 22,
-                  fontWeight: 500,
-                  color: palette.axis,
-                  lineHeight: 1,
-                }}
-              >
-                {data[data.length - 1].label ?? ""}
-              </div>
-            </>
-          ) : null}
-
           {chartType === "bar"
             ? data.map((d, i) => {
                 const cx = i * barSlot + barSlot / 2;
@@ -625,10 +495,13 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
                       transform: "translateX(-50%)",
                       fontFamily: FONT_FAMILIES.inter,
                       fontSize: 22,
-                      fontWeight: 500,
-                      color: palette.axis,
+                      fontWeight: 600,
+                      color: "#B8B0A1",
+                      letterSpacing: "0.18em",
+                      textTransform: "uppercase",
                       lineHeight: 1,
                       whiteSpace: "nowrap",
+                      textShadow: TEXT_SHADOW,
                     }}
                   >
                     {d.label ?? ""}
@@ -636,7 +509,47 @@ export const ChartReveal: React.FC<ChartRevealProps> = ({
                 );
               })
             : null}
+
+          {chartType === "line" && data.length > 0 ? (
+            <>
+              <div
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  fontFamily: FONT_FAMILIES.inter,
+                  fontSize: 22,
+                  fontWeight: 600,
+                  color: "#B8B0A1",
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  lineHeight: 1,
+                  textShadow: TEXT_SHADOW,
+                }}
+              >
+                {data[0].label ?? ""}
+              </div>
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: 0,
+                  fontFamily: FONT_FAMILIES.inter,
+                  fontSize: 22,
+                  fontWeight: 600,
+                  color: "#B8B0A1",
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  lineHeight: 1,
+                  textShadow: TEXT_SHADOW,
+                }}
+              >
+                {data[data.length - 1].label ?? ""}
+              </div>
+            </>
+          ) : null}
         </div>
+      </div>
       </div>
     </AbsoluteFill>
   );

@@ -13,41 +13,83 @@ import { useMGPhase } from "../shared/useMGPhase";
 import type { ComparisonContent, ComparisonSplitProps } from "./types";
 
 // ---------------------------------------------------------------------------
-// ComparisonSplit — before/after or wrong/right split-screen motion graphic.
+// ComparisonSplit — before/after split-screen motion graphic.
 // ---------------------------------------------------------------------------
 //
-// Choreography (entrance @ 30fps, ~28 frames):
+// Content per side: image, video, color, text, or animated STAT count-up
+// (the 80% creator-content use case, e.g. "$2,000/mo" → "$20,000/mo").
+//
+// Choreography (entrance @ 30fps, ~38 frames):
 //   0-8   divider grows outward from center (scaleY or scaleX 0→1).
 //   6-18  both sides slide in from their outer edges + fade.
-//   16-24 labels drop from translateY(-30) + fade.
-//   22-28 VS pill (if enabled) scales in with gentle overshoot.
+//   16-24 editorial header labels drop from translateY(-30) + fade.
+//   18-38 stat count-ups run (ease-out cubic), if any side is a stat.
+//   38-44 stat landing pulse.
 //
-// Hold: completely static.
+// Hold: static.
 //
-// Exit (16 frames, reversed + snappier):
-//   0-6   VS pill scales down + fades.
+// Exit (16 frames, reversed):
 //   0-8   labels fade + drift up.
-//   4-14  sides slide back toward their outer edges + fade.
+//   4-14  sides slide back out + fade.
 //   8-16  divider collapses to center last.
 
-const LABEL_SIZE = 64;
-const LABEL_PADDING_X = 14;
-const LABEL_PADDING_Y = 8;
-const LABEL_EDGE_OFFSET = 60;
-const LABEL_BG = "#0A0A0A";
+const LABEL_SIZE = 26;
+const LABEL_EDGE_OFFSET = 72;
+const LABEL_TEXT_SHADOW =
+  "0 2px 10px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.7)";
 
-const DIVIDER_THICKNESS = 6;
-const DIVIDER_GLOW =
-  "0 0 16px rgba(255,255,255,0.6), 0 0 4px rgba(255,255,255,0.9)";
+const DIVIDER_THICKNESS = 3;
 
-const VS_DIAMETER = 88;
-const VS_FONT_SIZE = 32;
+// Stat count-up window — kicks in after the sides have slid in (around
+// frame 18) and finishes before the landing pulse at 38.
+const STAT_COUNT_START = 18;
+const STAT_COUNT_END = 38;
+const STAT_PULSE_KEYFRAMES = [38, 41, 44] as const;
+
+// Ease-out cubic — weighty count-up landing.
+const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+
+interface Palette {
+  gradient: string;
+  fallback: string;
+  textColor: string;
+  subtleColor: string;
+}
+
+const THEMES: Record<"dark" | "light", Palette> = {
+  dark: {
+    gradient:
+      "linear-gradient(135deg, #0A0A0A 0%, #141416 55%, #1C1C1F 100%)",
+    fallback: "#0F0F10",
+    textColor: "#F2E9D6",
+    subtleColor: "#B8B0A1",
+  },
+  light: {
+    gradient:
+      "linear-gradient(135deg, #F2E9D6 0%, #ECE2CB 55%, #E3D8BE 100%)",
+    fallback: "#ECE2CB",
+    textColor: "#16120E",
+    subtleColor: "#5A4E3D",
+  },
+};
 
 // ---------------------------------------------------------------------------
-// Side content renderer — image / video / text / color.
+// Side content renderer — image / video / color / text / stat.
 // ---------------------------------------------------------------------------
 
-const SideContent: React.FC<{ content: ComparisonContent }> = ({ content }) => {
+interface SideContentProps {
+  content: ComparisonContent;
+  palette: Palette;
+  accentColor: string;
+  localFrame: number;
+}
+
+const SideContent: React.FC<SideContentProps> = ({
+  content,
+  palette,
+  accentColor,
+  localFrame,
+}) => {
   if (content.type === "image") {
     return (
       <Img
@@ -85,31 +127,154 @@ const SideContent: React.FC<{ content: ComparisonContent }> = ({ content }) => {
       />
     );
   }
-  // text
+  if (content.type === "text") {
+    return (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: palette.fallback,
+          backgroundImage: palette.gradient,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "0 40px",
+        }}
+      >
+        <div
+          style={{
+            fontFamily: FONT_FAMILIES.dmSerifDisplay,
+            fontSize: 108,
+            fontWeight: 400,
+            color: palette.textColor,
+            textTransform: "uppercase",
+            letterSpacing: "0.01em",
+            lineHeight: 1,
+            textAlign: "center",
+          }}
+        >
+          {content.text}
+        </div>
+      </div>
+    );
+  }
+
+  // stat — animated count-up with label
+  const from = content.fromValue ?? 0;
+  const countProgress = interpolate(
+    localFrame,
+    [STAT_COUNT_START, STAT_COUNT_END],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const eased = easeOutCubic(countProgress);
+  const currentValue = from + (content.value - from) * eased;
+  const display =
+    content.decimals !== undefined
+      ? currentValue.toFixed(content.decimals)
+      : Math.round(currentValue).toLocaleString();
+  const pulseScale = interpolate(
+    localFrame,
+    STAT_PULSE_KEYFRAMES as unknown as number[],
+    [1, 1.08, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
   return (
     <div
       style={{
         width: "100%",
         height: "100%",
-        backgroundColor: content.bgColor ?? "#0A0A0A",
+        backgroundColor: palette.fallback,
+        backgroundImage: palette.gradient,
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
+        padding: "0 24px",
       }}
     >
       <div
         style={{
-          fontFamily: FONT_FAMILIES.anton,
-          fontSize: 96,
-          fontWeight: 400,
-          color: content.color ?? "#FFFFFF",
-          textTransform: "uppercase",
-          letterSpacing: "0.02em",
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "baseline",
+          justifyContent: "center",
+          color: palette.textColor,
           lineHeight: 1,
-          textAlign: "center",
+          fontVariantNumeric: "tabular-nums",
+          transform: `scale(${pulseScale})`,
+          transformOrigin: "center",
         }}
       >
-        {content.text}
+        {content.prefix ? (
+          <span
+            style={{
+              fontFamily: FONT_FAMILIES.anton,
+              fontSize: 88,
+              fontWeight: 400,
+              letterSpacing: "-0.02em",
+              lineHeight: 1,
+              opacity: 0.9,
+              marginRight: 6,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {content.prefix}
+          </span>
+        ) : null}
+        <span
+          style={{
+            fontFamily: FONT_FAMILIES.anton,
+            fontSize: 148,
+            fontWeight: 400,
+            letterSpacing: "-0.02em",
+            lineHeight: 1,
+            fontVariantNumeric: "tabular-nums",
+          }}
+        >
+          {display}
+        </span>
+        {content.suffix ? (
+          <span
+            style={{
+              fontFamily: FONT_FAMILIES.anton,
+              fontSize: 88,
+              fontWeight: 400,
+              letterSpacing: "-0.02em",
+              lineHeight: 1,
+              opacity: 0.9,
+              marginLeft: 6,
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {content.suffix}
+          </span>
+        ) : null}
+      </div>
+      {/* Thin accent hairline between number and label */}
+      <div
+        style={{
+          width: 36,
+          height: 2,
+          backgroundColor: accentColor,
+          marginTop: 18,
+          marginBottom: 14,
+        }}
+      />
+      <div
+        style={{
+          fontFamily: FONT_FAMILIES.inter,
+          fontSize: 22,
+          fontWeight: 600,
+          color: palette.subtleColor,
+          letterSpacing: "0.22em",
+          textTransform: "uppercase",
+          textAlign: "center",
+          lineHeight: 1.3,
+        }}
+      >
+        {content.label}
       </div>
     </div>
   );
@@ -123,60 +288,56 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
   orientation = "vertical",
   sides,
   labels,
-  dividerColor = "#FFFFFF",
-  showVsPill = false,
+  accentColor = "#C8551F",
+  theme = "dark",
+  dividerColor,
 }) => {
   const { fps } = useVideoConfig();
   const { visible, localFrame, exitProgress } = useMGPhase(
     { startMs, durationMs, enterFrames, exitFrames },
-    { defaultEnterFrames: 28, defaultExitFrames: 16 },
+    { defaultEnterFrames: 44, defaultExitFrames: 16 },
   );
 
   if (!visible) return null;
 
+  const palette = THEMES[theme];
+  const resolvedDividerColor = dividerColor ?? accentColor;
   const isVertical = orientation === "vertical";
 
-  // ------------------------------------------------------------------------
-  // Divider (frames 0-8). Scales from 0 → 1 outward from center.
-  // ------------------------------------------------------------------------
-
+  // --- Divider (frames 0-8) -------------------------------------------------
   const dividerEnterSpring = spring({
     fps,
     frame: localFrame,
     config: SPRING_SNAPPY,
     durationInFrames: 8,
   });
-  // Exit: collapses last, between 0.5 and 1 of exitProgress (frames 8-16 of 16).
   const dividerExitScale = interpolate(exitProgress, [0.5, 1], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const dividerScale = exitProgress > 0 ? dividerExitScale : dividerEnterSpring;
+  const dividerScale =
+    exitProgress > 0 ? dividerExitScale : dividerEnterSpring;
 
-  // ------------------------------------------------------------------------
-  // Sides (frames 6-18). Each slides in from its outer edge.
-  // ------------------------------------------------------------------------
-
+  // --- Sides (frames 6-18) --------------------------------------------------
   const sideSpring = spring({
     fps,
     frame: localFrame - 6,
     config: SPRING_SNAPPY,
     durationInFrames: 12,
   });
-  // 0 = fully off-edge, 1 = fully centered.
   const sideEnterProgress = interpolate(sideSpring, [0, 1], [0, 1]);
   const sideFadeIn = interpolate(localFrame, [6, 18], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  // Exit: sides slide back between frames 4-14 of 16 exit frames (0.25 → 0.875).
   const sideExitProgress = interpolate(exitProgress, [0.25, 0.875], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  // Offset in percent: enter moves from -100% → 0%, exit moves from 0% → -100% (for leading side).
-  const leadingOffsetPct = (sideEnterProgress - 1) * 100 - sideExitProgress * 100;
-  const trailingOffsetPct = (1 - sideEnterProgress) * 100 + sideExitProgress * 100;
+  const leadingOffsetPct =
+    (sideEnterProgress - 1) * 100 - sideExitProgress * 100;
+  const trailingOffsetPct =
+    (1 - sideEnterProgress) * 100 + sideExitProgress * 100;
   const sideOpacity =
     sideFadeIn *
     interpolate(exitProgress, [0.25, 0.875], [1, 0], {
@@ -184,10 +345,7 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
       extrapolateRight: "clamp",
     });
 
-  // ------------------------------------------------------------------------
-  // Labels (frames 16-24). Drop in from translateY(-30) + fade.
-  // ------------------------------------------------------------------------
-
+  // --- Labels (frames 16-24) ------------------------------------------------
   const labelSpring = spring({
     fps,
     frame: localFrame - 16,
@@ -199,7 +357,6 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  // Exit: labels fade + drift up over frames 0-8 of 16 exit frames (0 → 0.5).
   const labelExitY = interpolate(exitProgress, [0, 0.5], [0, -20], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -211,41 +368,10 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
   const labelY = labelEnterY + labelExitY;
   const labelOpacity = labelFadeIn * labelExitFade;
 
-  // ------------------------------------------------------------------------
-  // VS pill (frames 22-28). Scales from 0 → 1 with gentle overshoot.
-  // ------------------------------------------------------------------------
-
-  const vsSpring = spring({
-    fps,
-    frame: localFrame - 22,
-    config: { ...SPRING_SNAPPY, damping: 10 }, // a touch bouncier for punctuation
-    durationInFrames: 8,
-  });
-  const vsEnterScale = vsSpring;
-  const vsFadeIn = interpolate(localFrame, [22, 28], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  // Exit: pill scales down + fades over frames 0-6 of 16 exit frames (0 → 0.375).
-  const vsExitScale = interpolate(exitProgress, [0, 0.375], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const vsExitFade = interpolate(exitProgress, [0, 0.375], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const vsScale = exitProgress > 0 ? vsExitScale : vsEnterScale;
-  const vsOpacity = vsFadeIn * vsExitFade;
-
-  // ------------------------------------------------------------------------
-  // Per-side layout geometry.
-  // ------------------------------------------------------------------------
-
+  // --- Geometry -------------------------------------------------------------
   const leadingSideStyle: React.CSSProperties = isVertical
     ? { top: 0, left: 0, width: "50%", height: "100%" }
     : { top: 0, left: 0, width: "100%", height: "50%" };
-
   const trailingSideStyle: React.CSSProperties = isVertical
     ? { top: 0, right: 0, width: "50%", height: "100%" }
     : { bottom: 0, left: 0, width: "100%", height: "50%" };
@@ -257,10 +383,6 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
     ? `translateX(${trailingOffsetPct}%)`
     : `translateY(${trailingOffsetPct}%)`;
 
-  // ------------------------------------------------------------------------
-  // Divider geometry — a centered line that grows outward from center.
-  // ------------------------------------------------------------------------
-
   const dividerStyle: React.CSSProperties = isVertical
     ? {
         position: "absolute",
@@ -268,8 +390,7 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
         left: `calc(50% - ${DIVIDER_THICKNESS / 2}px)`,
         width: DIVIDER_THICKNESS,
         height: "100%",
-        backgroundColor: dividerColor,
-        boxShadow: DIVIDER_GLOW,
+        backgroundColor: resolvedDividerColor,
         transform: `scaleY(${dividerScale})`,
         transformOrigin: "center",
       }
@@ -279,19 +400,10 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
         top: `calc(50% - ${DIVIDER_THICKNESS / 2}px)`,
         height: DIVIDER_THICKNESS,
         width: "100%",
-        backgroundColor: dividerColor,
-        boxShadow: DIVIDER_GLOW,
+        backgroundColor: resolvedDividerColor,
         transform: `scaleX(${dividerScale})`,
         transformOrigin: "center",
       };
-
-  // ------------------------------------------------------------------------
-  // Label positioning — top (vertical) or horizontally-centered in each half.
-  // For horizontal orientation the task spec says: "top label centered
-  // horizontally inside top side, bottom label centered horizontally inside
-  // bottom side" — so both labels sit on the horizontal centerline of their
-  // half, offset vertically from the outer edge by LABEL_EDGE_OFFSET.
-  // ------------------------------------------------------------------------
 
   const leadingLabelWrapperStyle: React.CSSProperties = isVertical
     ? {
@@ -310,7 +422,6 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
         display: "flex",
         justifyContent: "center",
       };
-
   const trailingLabelWrapperStyle: React.CSSProperties = isVertical
     ? {
         position: "absolute",
@@ -329,31 +440,25 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
         justifyContent: "center",
       };
 
-  const labelChipStyle: React.CSSProperties = {
-    fontFamily: FONT_FAMILIES.anton,
+  const labelStyle: React.CSSProperties = {
+    fontFamily: FONT_FAMILIES.inter,
     fontSize: LABEL_SIZE,
-    fontWeight: 400,
-    color: "#FFFFFF",
+    fontWeight: 600,
+    color: accentColor,
     textTransform: "uppercase",
-    letterSpacing: "0.04em",
+    letterSpacing: "0.28em",
     lineHeight: 1,
-    backgroundColor: LABEL_BG,
-    paddingLeft: LABEL_PADDING_X,
-    paddingRight: LABEL_PADDING_X,
-    paddingTop: LABEL_PADDING_Y,
-    paddingBottom: LABEL_PADDING_Y,
-    borderRadius: 4,
+    textShadow: LABEL_TEXT_SHADOW,
     whiteSpace: "nowrap",
   };
 
   const [leadingContent, trailingContent] = sides;
   const [leadingLabel, trailingLabel] = labels;
-
   const desatFilter = "saturate(0.4) brightness(0.85)";
 
   return (
     <AbsoluteFill>
-      {/* Leading side (left for vertical, top for horizontal) */}
+      {/* Leading side */}
       <div
         style={{
           position: "absolute",
@@ -370,11 +475,16 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
             filter: leadingContent.desaturate ? desatFilter : undefined,
           }}
         >
-          <SideContent content={leadingContent} />
+          <SideContent
+            content={leadingContent}
+            palette={palette}
+            accentColor={accentColor}
+            localFrame={localFrame}
+          />
         </div>
       </div>
 
-      {/* Trailing side (right for vertical, bottom for horizontal) */}
+      {/* Trailing side */}
       <div
         style={{
           position: "absolute",
@@ -391,18 +501,23 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
             filter: trailingContent.desaturate ? desatFilter : undefined,
           }}
         >
-          <SideContent content={trailingContent} />
+          <SideContent
+            content={trailingContent}
+            palette={palette}
+            accentColor={accentColor}
+            localFrame={localFrame}
+          />
         </div>
       </div>
 
-      {/* Divider line */}
+      {/* Divider line — thin accent, no glow */}
       <div style={dividerStyle} />
 
-      {/* Leading label */}
+      {/* Leading header label — editorial caps, no chip */}
       <div style={leadingLabelWrapperStyle}>
         <div
           style={{
-            ...labelChipStyle,
+            ...labelStyle,
             transform: `translateY(${labelY}px)`,
             opacity: labelOpacity,
           }}
@@ -411,11 +526,11 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
         </div>
       </div>
 
-      {/* Trailing label */}
+      {/* Trailing header label */}
       <div style={trailingLabelWrapperStyle}>
         <div
           style={{
-            ...labelChipStyle,
+            ...labelStyle,
             transform: `translateY(${labelY}px)`,
             opacity: labelOpacity,
           }}
@@ -423,41 +538,6 @@ export const ComparisonSplit: React.FC<ComparisonSplitProps> = ({
           {trailingLabel}
         </div>
       </div>
-
-      {/* VS pill — geometric center of the frame, on top of divider */}
-      {showVsPill ? (
-        <div
-          style={{
-            position: "absolute",
-            top: `calc(50% - ${VS_DIAMETER / 2}px)`,
-            left: `calc(50% - ${VS_DIAMETER / 2}px)`,
-            width: VS_DIAMETER,
-            height: VS_DIAMETER,
-            borderRadius: VS_DIAMETER / 2,
-            backgroundColor: "#FFFFFF",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transform: `scale(${vsScale})`,
-            opacity: vsOpacity,
-          }}
-        >
-          <div
-            style={{
-              fontFamily: FONT_FAMILIES.anton,
-              fontSize: VS_FONT_SIZE,
-              fontWeight: 400,
-              color: "#0A0A0A",
-              textTransform: "uppercase",
-              letterSpacing: "0.04em",
-              lineHeight: 1,
-            }}
-          >
-            VS
-          </div>
-        </div>
-      ) : null}
     </AbsoluteFill>
   );
 };

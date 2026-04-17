@@ -1,4 +1,5 @@
 import type { MGTimingProps } from "../shared/types";
+import type { MGPositionProps } from "../shared/positioning";
 
 export interface ProgressBarMilestone {
   // Position along the track, 0–1 (e.g. 0.5 = halfway).
@@ -7,13 +8,16 @@ export interface ProgressBarMilestone {
   label?: string;
 }
 
-interface ProgressBarBase extends MGTimingProps {
+interface ProgressBarBase extends MGTimingProps, MGPositionProps {
   label?: string;
   width?: number;
   trackHeight?: number;
+  // Color of the progress fill itself. Default "#FFFFFF" — white reads on
+  // any footage and stays out of the way of brand color elsewhere.
+  fillColor?: string;
+  // Brand accent for the eyebrow label + hairline rule. Default "#C8551F".
   accentColor?: string;
   trackColor?: string;
-  position?: "top" | "center" | "bottom";
   milestones?: ProgressBarMilestone[];
   // Override the right-side counter text (receives current numeric value during count-up).
   formatValue?: (current: number) => string;

@@ -86,16 +86,21 @@ import { AuraDemo } from "./Testing/Aura/AuraDemo";
 import { GadzhiDemo } from "./Testing/Gadzhi/GadzhiDemo";
 import { TitanDemo } from "./Testing/Titan/TitanDemo";
 import { LowerThirdDemo } from "./compositions/LowerThirdDemo";
+import { LowerThirdLightDemo } from "./compositions/LowerThirdLightDemo";
 import { SceneTitleDemo } from "./compositions/SceneTitleDemo";
+import { SceneTitleLightDemo } from "./compositions/SceneTitleLightDemo";
 import { AnnotationArrowDemo } from "./compositions/AnnotationArrowDemo";
 import { BRollFrameDemo } from "./compositions/BRollFrameDemo";
 import { QuoteCardDemo } from "./compositions/QuoteCardDemo";
+import { QuoteCardLightDemo } from "./compositions/QuoteCardLightDemo";
 import { StatCardDemo } from "./compositions/StatCardDemo";
 import { NotificationDemo } from "./compositions/NotificationDemo";
 import { ComparisonSplitDemo } from "./compositions/ComparisonSplitDemo";
 import { ChartRevealDemo } from "./compositions/ChartRevealDemo";
 import { SpeechBubbleDemo } from "./compositions/SpeechBubbleDemo";
 import { ProgressBarDemo } from "./compositions/ProgressBarDemo";
+import { TypingIndicatorDemo } from "./compositions/TypingIndicatorDemo";
+import { ChatThreadDemo } from "./compositions/ChatThreadDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -700,8 +705,24 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={180}
         />
         <Composition
+          id="mg-lower-third-light"
+          component={LowerThirdLightDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
+        />
+        <Composition
           id="mg-scene-title"
           component={SceneTitleDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={150}
+        />
+        <Composition
+          id="mg-scene-title-light"
+          component={SceneTitleLightDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
@@ -732,6 +753,14 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={180}
         />
         <Composition
+          id="mg-quote-card-light"
+          component={QuoteCardLightDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
+        />
+        <Composition
           id="mg-stat-card"
           component={StatCardDemo}
           width={WIDTH}
@@ -745,7 +774,7 @@ export const RemotionRoot: React.FC = () => {
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
-          durationInFrames={150}
+          durationInFrames={210}
         />
         <Composition
           id="mg-comparison-split"
@@ -778,6 +807,22 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={180}
+        />
+        <Composition
+          id="mg-typing-indicator"
+          component={TypingIndicatorDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
+        />
+        <Composition
+          id="mg-chat-thread"
+          component={ChatThreadDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
         />
       </Folder>
       <Folder name="Color-Effects">

@@ -47,6 +47,55 @@ import { DispatchDemo } from "./Testing/Dispatch/DispatchDemo";
 import { TelemetryDemo } from "./Testing/Telemetry/TelemetryDemo";
 import { PulseDemo } from "./Testing/Pulse/PulseDemo";
 import { EditorialPopDemo } from "./Testing/EditorialPop/EditorialPopDemo";
+import { ScanlineImpactDemo } from "./Testing/ScanlineImpact/ScanlineImpactDemo";
+import { PunchZoomDemo } from "./compositions/PunchZoomDemo";
+import { KenBurnsDemo } from "./compositions/KenBurnsDemo";
+import { WhipZoomDemo } from "./compositions/WhipZoomDemo";
+import { DollyZoomDemo } from "./compositions/DollyZoomDemo";
+import { ElasticBounceDemo } from "./compositions/ElasticBounceDemo";
+import { ParallaxDepthDemo } from "./compositions/ParallaxDepthDemo";
+import { StepZoomDemo } from "./compositions/StepZoomDemo";
+import { LetterboxPushDemo } from "./compositions/LetterboxPushDemo";
+import { CircleMaskDemo } from "./compositions/CircleMaskDemo";
+import { StageZoomDemo } from "./compositions/StageZoomDemo";
+import { CardSwipeTransitionDemo } from "./compositions/CardSwipeTransitionDemo";
+import { CubeTransitionDemo } from "./compositions/CubeTransitionDemo";
+import { ZoomThroughTransitionDemo } from "./compositions/ZoomThroughTransitionDemo";
+import { SlideOverTransitionDemo } from "./compositions/SlideOverTransitionDemo";
+import { FlipTransitionDemo } from "./compositions/FlipTransitionDemo";
+import { MorphTransitionDemo } from "./compositions/MorphTransitionDemo";
+import { StackTransitionDemo } from "./compositions/StackTransitionDemo";
+import { CrossfadeZoomTransitionDemo } from "./compositions/CrossfadeZoomTransitionDemo";
+import { FlashCutTransitionDemo } from "./compositions/FlashCutTransitionDemo";
+import { ZoomPunchTransitionDemo } from "./compositions/ZoomPunchTransitionDemo";
+import { MaskWipeTransitionDemo } from "./compositions/MaskWipeTransitionDemo";
+import { MotionBlurSlideTransitionDemo } from "./compositions/MotionBlurSlideTransitionDemo";
+import { WhipPanTransitionDemo } from "./compositions/WhipPanTransitionDemo";
+import { ShutterFlashTransitionDemo } from "./compositions/ShutterFlashTransitionDemo";
+import { BlurDissolveTransitionDemo } from "./compositions/BlurDissolveTransitionDemo";
+import { GlitchTransitionDemo } from "./compositions/GlitchTransitionDemo";
+import { LightLeakTransitionDemo } from "./compositions/LightLeakTransitionDemo";
+import { FilmBurnTransitionDemo } from "./compositions/FilmBurnTransitionDemo";
+import { IlluminateDemo } from "./Testing/Illuminate/IlluminateDemo";
+import { GravityDemo } from "./Testing/Gravity/GravityDemo";
+import { TrackDemo } from "./Testing/Track/TrackDemo";
+import { AnamorphicBreatheDemo } from "./compositions/AnamorphicBreatheDemo";
+import { DepthPullDemo } from "./compositions/DepthPullDemo";
+import { WarmGlowDemo } from "./Testing/WarmGlow/WarmGlowDemo";
+import { AuraDemo } from "./Testing/Aura/AuraDemo";
+import { GadzhiDemo } from "./Testing/Gadzhi/GadzhiDemo";
+import { TitanDemo } from "./Testing/Titan/TitanDemo";
+import { LowerThirdDemo } from "./compositions/LowerThirdDemo";
+import { SceneTitleDemo } from "./compositions/SceneTitleDemo";
+import { AnnotationArrowDemo } from "./compositions/AnnotationArrowDemo";
+import { BRollFrameDemo } from "./compositions/BRollFrameDemo";
+import { QuoteCardDemo } from "./compositions/QuoteCardDemo";
+import { StatCardDemo } from "./compositions/StatCardDemo";
+import { NotificationDemo } from "./compositions/NotificationDemo";
+import { ComparisonSplitDemo } from "./compositions/ComparisonSplitDemo";
+import { ChartRevealDemo } from "./compositions/ChartRevealDemo";
+import { SpeechBubbleDemo } from "./compositions/SpeechBubbleDemo";
+import { ProgressBarDemo } from "./compositions/ProgressBarDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -363,27 +412,273 @@ export const RemotionRoot: React.FC = () => {
           fps={FPS}
           durationInFrames={285}
         />
-      </Folder>
-      <Folder name="Zoom-Effects">
         <Composition
-          id="zoom-placeholder"
-          component={Placeholder}
+          id="caption-scanline-impact"
+          component={ScanlineImpactDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
-          durationInFrames={DURATION}
-          defaultProps={{ label: "Zoom effects go here" }}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-illuminate"
+          component={IlluminateDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-gravity"
+          component={GravityDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-track"
+          component={TrackDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-warm-glow"
+          component={WarmGlowDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={330}
+        />
+        <Composition
+          id="caption-aura"
+          component={AuraDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={285}
+        />
+        <Composition
+          id="caption-gadzhi"
+          component={GadzhiDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="caption-Gadzhi-style"
+          component={TitanDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+      </Folder>
+      <Folder name="Zoom-Effects">
+        <Composition
+          id="zoom-smooth-push"
+          component={PunchZoomDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="zoom-snap-reframe"
+          component={WhipZoomDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="zoom-focus-window"
+          component={DollyZoomDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="zoom-step"
+          component={StepZoomDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="zoom-letterbox-push"
+          component={LetterboxPushDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="zoom-depth-pull"
+          component={DepthPullDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="zoom-stage"
+          component={StageZoomDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
         />
       </Folder>
       <Folder name="Transitions">
         <Composition
-          id="transition-placeholder"
-          component={Placeholder}
+          id="transition-card-swipe"
+          component={CardSwipeTransitionDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
-          durationInFrames={DURATION}
-          defaultProps={{ label: "Transitions go here" }}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-cube"
+          component={CubeTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-zoom-through"
+          component={ZoomThroughTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-slide-over"
+          component={SlideOverTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-flip"
+          component={FlipTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-morph"
+          component={MorphTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-stack"
+          component={StackTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-crossfade-zoom"
+          component={CrossfadeZoomTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-flash-cut"
+          component={FlashCutTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-zoom-punch"
+          component={ZoomPunchTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-mask-wipe"
+          component={MaskWipeTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-motion-blur-slide"
+          component={MotionBlurSlideTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-whip-pan"
+          component={WhipPanTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-shutter-flash"
+          component={ShutterFlashTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-blur-dissolve"
+          component={BlurDissolveTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-glitch"
+          component={GlitchTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-light-leak"
+          component={LightLeakTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-film-burn"
+          component={FilmBurnTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
         />
       </Folder>
       <Folder name="Motion-Graphics">
@@ -395,6 +690,94 @@ export const RemotionRoot: React.FC = () => {
           fps={FPS}
           durationInFrames={DURATION}
           defaultProps={{ label: "Motion graphics go here" }}
+        />
+        <Composition
+          id="mg-lower-third"
+          component={LowerThirdDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
+        />
+        <Composition
+          id="mg-scene-title"
+          component={SceneTitleDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={150}
+        />
+        <Composition
+          id="mg-annotation-arrow"
+          component={AnnotationArrowDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={150}
+        />
+        <Composition
+          id="mg-broll-frame"
+          component={BRollFrameDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={150}
+        />
+        <Composition
+          id="mg-quote-card"
+          component={QuoteCardDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
+        />
+        <Composition
+          id="mg-stat-card"
+          component={StatCardDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
+        />
+        <Composition
+          id="mg-notification"
+          component={NotificationDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={150}
+        />
+        <Composition
+          id="mg-comparison-split"
+          component={ComparisonSplitDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
+        />
+        <Composition
+          id="mg-chart-reveal"
+          component={ChartRevealDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={210}
+        />
+        <Composition
+          id="mg-speech-bubble"
+          component={SpeechBubbleDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={150}
+        />
+        <Composition
+          id="mg-progress-bar"
+          component={ProgressBarDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={180}
         />
       </Folder>
       <Folder name="Color-Effects">

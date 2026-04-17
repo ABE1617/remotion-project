@@ -1,5 +1,6 @@
 import React from "react";
-import { AbsoluteFill } from "remotion";
+import { AbsoluteFill, staticFile } from "remotion";
+import { Video } from "@remotion/media";
 import { TypewriterReveal } from "../components/captions/TypewriterReveal";
 import type { TikTokPage } from "../types/captions";
 
@@ -72,8 +73,12 @@ const SAMPLE_PAGES: TikTokPage[] = [
 
 export const TypewriterRevealDemo: React.FC = () => {
   return (
-    <AbsoluteFill style={{ backgroundColor: "#0a0a0a" }}>
-      <TypewriterReveal pages={SAMPLE_PAGES} scheme="classic" />
+    <AbsoluteFill>
+      <Video
+        src={staticFile("sample-video.mp4")}
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+      <TypewriterReveal pages={SAMPLE_PAGES} scheme="classic" enableBox={false} fontSize={54} />
     </AbsoluteFill>
   );
 };

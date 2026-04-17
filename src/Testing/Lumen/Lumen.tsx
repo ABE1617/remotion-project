@@ -7,7 +7,7 @@ import {
   spring,
   interpolate,
 } from "remotion";
-import type { TikTokPage, TikTokToken } from "../../types/captions";
+import type { TikTokToken } from "../../types/captions";
 import type { LumenProps } from "./types";
 import { msToFrames } from "../../utils/timing";
 import { FONT_FAMILIES } from "../../utils/fonts";

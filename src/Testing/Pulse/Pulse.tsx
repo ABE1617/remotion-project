@@ -102,52 +102,42 @@ export const Pulse: React.FC<PulseProps> = ({
 
   if (activeIdx < 0) return null;
 
-  const isFirstPage = activeIdx === 0;
+  // Group pages into pairs — no text ever repeats across screens
+  const pairIdx = Math.floor(activeIdx / 2);
+  const isFirstInPair = activeIdx % 2 === 0;
+  const slot1PageIdx = pairIdx * 2;
+  const slot2PageIdx = pairIdx * 2 + 1;
+  const hasSlot2 = !isFirstInPair && slot2PageIdx < pages.length;
+
   const slotGap = 22;
   const slotOffset = fontSize * 0.5 + slotGap;
   const activeStart = msToFrames(pages[activeIdx].startMs, fps);
-  const staggerFrames = 8;
 
   // --- Slot 1 (top) opacity ---
-  let slot1Opacity: number;
-  if (isFirstPage) {
-    // First page: slot 1 IS the active line, fade in
-    slot1Opacity = interpolate(
-      frame,
-      [activeStart, activeStart + fadeDurationFrames],
-      [0, 1],
-      { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-    );
-  } else if (activeIdx === 1) {
-    // Second page: slot 1 content unchanged (still page 0), stays fully visible
-    slot1Opacity = 1;
-  } else {
-    // 3rd+ page: slot 1 content changed, fade in the new dimmed line
-    slot1Opacity = interpolate(
-      frame,
-      [activeStart, activeStart + fadeDurationFrames],
-      [0, 1],
-      { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
-    );
-  }
+  const slot1Start = msToFrames(pages[slot1PageIdx].startMs, fps);
+  let slot1Opacity = interpolate(
+    frame,
+    [slot1Start, slot1Start + fadeDurationFrames],
+    [0, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
 
   // --- Slot 2 (bottom) opacity ---
   let slot2Opacity = 0;
-  if (!isFirstPage) {
-    const delay = activeIdx >= 2 ? staggerFrames : 0;
-    const appear = activeStart + delay;
+  if (hasSlot2) {
     slot2Opacity = interpolate(
       frame,
-      [appear, appear + fadeDurationFrames],
+      [activeStart, activeStart + fadeDurationFrames],
       [0, 1],
       { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
     );
   }
 
   // Last page fade out
-  if (activeIdx === pages.length - 1) {
+  const lastVisibleIdx = hasSlot2 ? slot2PageIdx : slot1PageIdx;
+  if (lastVisibleIdx === pages.length - 1) {
     const activeEnd = msToFrames(
-      pages[activeIdx].startMs + pages[activeIdx].durationMs,
+      pages[lastVisibleIdx].startMs + pages[lastVisibleIdx].durationMs,
       fps,
     );
     const fadeOut = interpolate(
@@ -156,10 +146,10 @@ export const Pulse: React.FC<PulseProps> = ({
       [1, 0],
       { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
     );
-    if (isFirstPage) {
-      slot1Opacity *= fadeOut;
-    } else {
+    if (hasSlot2) {
       slot2Opacity *= fadeOut;
+    } else {
+      slot1Opacity *= fadeOut;
     }
   }
 
@@ -184,7 +174,7 @@ export const Pulse: React.FC<PulseProps> = ({
           willChange: "transform",
         }}
       >
-        {/* Slot 1 (top): first page = active, later = dimmed previous */}
+        {/* Slot 1 (top): first page of the pair */}
         <div
           style={{
             position: "absolute",
@@ -196,18 +186,18 @@ export const Pulse: React.FC<PulseProps> = ({
           }}
         >
           <PulseLine
-            tokens={pages[isFirstPage ? activeIdx : activeIdx - 1].tokens}
+            tokens={pages[slot1PageIdx].tokens}
             keywordSet={keywordSet}
             textColor={textColor}
             keywordColor={keywordColor}
             fontSize={fontSize}
             opacity={slot1Opacity}
-            dimmed={!isFirstPage}
+            dimmed={hasSlot2}
           />
         </div>
 
-        {/* Slot 2 (bottom): active line, appears after slot 1 */}
-        {!isFirstPage && (
+        {/* Slot 2 (bottom): second page of the pair */}
+        {hasSlot2 && (
           <div
             style={{
               position: "absolute",
@@ -219,7 +209,7 @@ export const Pulse: React.FC<PulseProps> = ({
             }}
           >
             <PulseLine
-              tokens={pages[activeIdx].tokens}
+              tokens={pages[slot2PageIdx].tokens}
               keywordSet={keywordSet}
               textColor={textColor}
               keywordColor={keywordColor}

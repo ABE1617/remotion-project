@@ -21,6 +21,7 @@ import { loadFont as loadBarlowCondensed } from "@remotion/google-fonts/BarlowCo
 import { loadFont as loadDMSans } from "@remotion/google-fonts/DMSans";
 import { loadFont as loadFiraSansCondensed } from "@remotion/google-fonts/FiraSansCondensed";
 import { loadFont as loadJetBrainsMono } from "@remotion/google-fonts/JetBrainsMono";
+import { loadFont as loadTeko } from "@remotion/google-fonts/Teko";
 
 // Load all caption fonts at module scope so they're available immediately
 const montserrat = loadMontserrat();
@@ -44,6 +45,7 @@ const barlowCondensed = loadBarlowCondensed();
 const dmSans = loadDMSans();
 const firaSansCondensed = loadFiraSansCondensed();
 const jetBrainsMono = loadJetBrainsMono();
+const teko = loadTeko();
 
 loadLocalFont({
   family: "Hey August",
@@ -83,6 +85,7 @@ export const FONT_FAMILIES = {
   dmSans: dmSans.fontFamily,
   firaSansCondensed: firaSansCondensed.fontFamily,
   jetBrainsMono: jetBrainsMono.fontFamily,
+  teko: teko.fontFamily,
   feelingPassionate: "Feeling Passionate",
   mithaScript: "Mitha Script",
 } as const;

@@ -14,7 +14,7 @@ export const TYPEWRITER_SCHEMES: Record<
 > = {
   classic: {
     textColor: "#FFFFFF",
-    bgColor: "rgba(0, 0, 0, 0.8)",
+    bgColor: "#0a0a0a",
     cursorColor: "#FFFFFF",
   },
   terminal: {
@@ -38,7 +38,7 @@ export interface TypewriterRevealProps extends CaptionStyleProps {
   showCursor?: boolean;
   /** Cursor blink interval in ms. Default: 530 */
   cursorBlinkMs?: number;
-  /** Show background box. Default: true */
+  /** Show background box. Default: false */
   enableBox?: boolean;
   /** Force lowercase. Default: true */
   lowercase?: boolean;

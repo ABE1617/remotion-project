@@ -81,7 +81,7 @@ export const StaggerWaveDemo: React.FC = () => {
         src={staticFile("sample-video.mp4")}
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
-      <StaggerWave pages={PAGES} position="center" />
+      <StaggerWave pages={PAGES} position="bottom" maxWordsPerLine={2} />
     </AbsoluteFill>
   );
 };

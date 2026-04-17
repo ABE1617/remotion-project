@@ -137,6 +137,13 @@ const TypewriterPage: React.FC<{
     letterSpacing,
     lineHeight,
     whiteSpace: "pre-wrap",
+    textShadow: [
+      "0 2px 4px rgba(0,0,0,0.9)",
+      "0 0 8px rgba(0,0,0,0.8)",
+      "0 0 20px rgba(0,0,0,0.6)",
+      "0 0 40px rgba(0,0,0,0.4)",
+      "0 4px 12px rgba(0,0,0,0.5)",
+    ].join(", "),
   };
 
   return (
@@ -180,7 +187,7 @@ export const TypewriterReveal: React.FC<TypewriterRevealProps> = ({
   position = "bottom",
   showCursor = true,
   cursorBlinkMs = 530,
-  enableBox = true,
+  enableBox = false,
   lowercase = true,
   letterSpacing = "0.03em",
   lineHeight = 1.4,

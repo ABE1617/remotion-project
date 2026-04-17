@@ -283,7 +283,7 @@ export const StaggerWave: React.FC<StaggerWaveProps> = ({
   fontFamily = FONT_FAMILIES.montserrat,
   fontSize = 76,
   fontWeight = 900,
-  position = "center",
+  position = "bottom",
   accentColor = "#FFED00",
   upcomingOpacity = 0.38,
   staggerFrames = 3,
@@ -312,10 +312,12 @@ export const StaggerWave: React.FC<StaggerWaveProps> = ({
           >
             <AbsoluteFill
               style={{
-                ...getCaptionPositionStyle(position),
                 display: "flex",
-                flexDirection: "column",
                 alignItems: "center",
+                justifyContent: "flex-end",
+                paddingBottom: 300,
+                paddingLeft: 200,
+                paddingRight: 200,
               }}
             >
               <StaggerWavePage

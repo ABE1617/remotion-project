@@ -9,6 +9,6 @@ export interface EditorialPopProps extends CaptionStyleProps {
   keywordScale?: number;
   /** Text color (all white by default). Default: "#FFFFFF" */
   textColor?: string;
-  /** Fade duration in frames. Default: 5 */
-  fadeDurationFrames?: number;
+  /** Max words per line before splitting. Default: 3 */
+  maxWordsPerLine?: number;
 }

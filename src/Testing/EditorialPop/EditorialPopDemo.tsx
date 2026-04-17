@@ -6,61 +6,65 @@ import type { TikTokPage } from "../../types/captions";
 
 const PAGES: TikTokPage[] = [
   {
-    text: "your videos like",
+    text: "I used the",
     startMs: 100,
     durationMs: 1800,
     tokens: [
-      { text: "your", fromMs: 100, toMs: 500 },
-      { text: "videos", fromMs: 500, toMs: 1200 },
-      { text: "like", fromMs: 1200, toMs: 1900 },
+      { text: "I", fromMs: 100, toMs: 400 },
+      { text: "used", fromMs: 400, toMs: 900 },
+      { text: "the", fromMs: 900, toMs: 1900 },
     ],
   },
   {
-    text: "need better captions",
+    text: "Captions App",
     startMs: 2000,
     durationMs: 1800,
     tokens: [
-      { text: "need", fromMs: 2000, toMs: 2500 },
-      { text: "better", fromMs: 2500, toMs: 3000 },
-      { text: "captions", fromMs: 3000, toMs: 3800 },
+      { text: "Captions", fromMs: 2000, toMs: 2900 },
+      { text: "App", fromMs: 2900, toMs: 3800 },
     ],
   },
   {
-    text: "to stop the scroll",
+    text: "and it changed",
     startMs: 3900,
     durationMs: 1600,
     tokens: [
-      { text: "to", fromMs: 3900, toMs: 4100 },
-      { text: "stop", fromMs: 4100, toMs: 4500 },
-      { text: "the", fromMs: 4500, toMs: 4700 },
-      { text: "scroll", fromMs: 4700, toMs: 5500 },
+      { text: "and", fromMs: 3900, toMs: 4200 },
+      { text: "it", fromMs: 4200, toMs: 4500 },
+      { text: "changed", fromMs: 4500, toMs: 5500 },
     ],
   },
   {
-    text: "and boost engagement",
+    text: "everything about",
     startMs: 5600,
-    durationMs: 1600,
+    durationMs: 1400,
     tokens: [
-      { text: "and", fromMs: 5600, toMs: 5800 },
-      { text: "boost", fromMs: 5800, toMs: 6300 },
-      { text: "engagement", fromMs: 6300, toMs: 7200 },
+      { text: "everything", fromMs: 5600, toMs: 6400 },
+      { text: "about", fromMs: 6400, toMs: 7000 },
     ],
   },
   {
-    text: "this is how you grow",
-    startMs: 7300,
-    durationMs: 1600,
+    text: "my content",
+    startMs: 7100,
+    durationMs: 1400,
     tokens: [
-      { text: "this", fromMs: 7300, toMs: 7500 },
-      { text: "is", fromMs: 7500, toMs: 7700 },
-      { text: "how", fromMs: 7700, toMs: 7900 },
-      { text: "you", fromMs: 7900, toMs: 8100 },
-      { text: "grow", fromMs: 8100, toMs: 8900 },
+      { text: "my", fromMs: 7100, toMs: 7500 },
+      { text: "content", fromMs: 7500, toMs: 8500 },
+    ],
+  },
+  {
+    text: "just add captions",
+    startMs: 8600,
+    durationMs: 1500,
+    tokens: [
+      { text: "just", fromMs: 8600, toMs: 8900 },
+      { text: "add", fromMs: 8900, toMs: 9200 },
+      { text: "captions", fromMs: 9200, toMs: 10100 },
     ],
   },
 ];
 
-const KEYWORDS = ["videos", "captions", "stop", "scroll", "boost", "engagement", "grow"];
+const KEYWORDS = ["Captions", "App", "changed", "everything", "content", "captions"];
 
 export const EditorialPopDemo: React.FC = () => {
   return (
@@ -69,7 +73,7 @@ export const EditorialPopDemo: React.FC = () => {
         src={staticFile("sample-video.mp4")}
         style={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
-      <EditorialPop pages={PAGES} keywords={KEYWORDS} position="bottom" />
+      <EditorialPop pages={PAGES} keywords={KEYWORDS} maxWordsPerLine={2} position="bottom" />
     </AbsoluteFill>
   );
 };

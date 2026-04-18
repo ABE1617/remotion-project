@@ -5,15 +5,16 @@ import type { ColorTimingMode } from "./shared";
 
 export interface CinematicGradeProps {
   children: React.ReactNode;
-  // Full-strength intensity 0..1. Default 1.0.
   intensity?: number;
-  // Timing. Default: persistent, 18f fade-in.
   timing?: ColorTimingMode;
 }
 
-// Teal-&-orange cinematic grade. Crushes blacks, adds warm highlight
-// roll-off, and splits the tone: cool shadows / warm highlights. Layered
-// with blend modes so footage underneath keeps its detail.
+// Teal-&-orange cinematic grade. Split tone done by CSS blend modes —
+// `multiply` with a cool color darkens shadows toward teal, `overlay`
+// with a warm color lifts highlights toward orange. Both overlays are
+// FLAT (no radial gradients) so the tint is bound to pixel luminance,
+// not screen position — that's what avoids the orange/white halo in
+// the center of the frame.
 export const CinematicGrade: React.FC<CinematicGradeProps> = ({
   children,
   intensity = 1,
@@ -27,47 +28,47 @@ export const CinematicGrade: React.FC<CinematicGradeProps> = ({
     defaultFadeInFrames: 18,
   });
 
-  // Contrast/saturation/warmth ramped by k
-  const contrast = 1 + 0.18 * k;
-  const saturation = 1 + 0.12 * k;
-  const sepia = 0.08 * k;
+  const contrast = 1 + 0.1 * k;
+  const saturation = 1 + 0.05 * k;
 
   return (
     <AbsoluteFill>
       <AbsoluteFill
         style={{
-          filter: `contrast(${contrast}) saturate(${saturation}) sepia(${sepia})`,
+          filter: `contrast(${contrast}) saturate(${saturation})`,
         }}
       >
         {children}
       </AbsoluteFill>
 
-      {/* Cool shadows (teal) — multiply darkens shadows toward teal */}
+      {/* Cool shadow push — flat dark teal via soft-light. Soft-light is
+          a gentler curve than multiply so shadows nudge teal without
+          going muddy or crushing detail. */}
       <ColorEffectLayer
         style={{
-          background:
-            "radial-gradient(ellipse at 50% 50%, rgba(10,80,95,0.0) 30%, rgba(6,52,70,0.55) 100%)",
-          mixBlendMode: "multiply",
-          opacity: 0.9 * k,
-        }}
-      />
-
-      {/* Warm highlights (orange) — screen lifts bright areas toward amber */}
-      <ColorEffectLayer
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 40%, rgba(255,170,90,0.28) 0%, rgba(255,140,60,0.0) 55%)",
-          mixBlendMode: "screen",
-          opacity: 0.85 * k,
-        }}
-      />
-
-      {/* Subtle vignette to contain the eye */}
-      <ColorEffectLayer
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.45) 100%)",
+          background: "#0d3a48",
+          mixBlendMode: "soft-light",
           opacity: 0.55 * k,
+        }}
+      />
+
+      {/* Warm highlight lift — flat amber via soft-light, lower opacity.
+          Soft-light gives a refined warm roll-off without the orange
+          blown-out look of overlay. */}
+      <ColorEffectLayer
+        style={{
+          background: "#ff9a4c",
+          mixBlendMode: "soft-light",
+          opacity: 0.35 * k,
+        }}
+      />
+
+      {/* Subtle black vignette for eye containment. No color wash. */}
+      <ColorEffectLayer
+        style={{
+          background:
+            "radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(0,0,0,0.38) 100%)",
+          opacity: 0.4 * k,
         }}
       />
     </AbsoluteFill>

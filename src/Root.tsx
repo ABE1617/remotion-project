@@ -128,11 +128,13 @@ import { ChromaSplitDemo } from "./compositions/ChromaSplitDemo";
 import { VignettePulseDemo } from "./compositions/VignettePulseDemo";
 import { InvertStrikeDemo } from "./compositions/InvertStrikeDemo";
 import { HalationDemo } from "./compositions/HalationDemo";
-import { AnamorphicBloomDemo } from "./compositions/AnamorphicBloomDemo";
 import { SplitToneDemo } from "./compositions/SplitToneDemo";
 import { CineMonoDemo } from "./compositions/CineMonoDemo";
 import { GoldenHourDemo } from "./compositions/GoldenHourDemo";
 import { FilmGrainDemo } from "./compositions/FilmGrainDemo";
+import { CineStillDemo } from "./compositions/CineStillDemo";
+import { PortraDemo } from "./compositions/PortraDemo";
+import { NeoNoirDemo } from "./compositions/NeoNoirDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -872,7 +874,6 @@ export const RemotionRoot: React.FC = () => {
           fps={FPS}
           durationInFrames={210}
         />
-
         <Composition
           id="mg-chart-reveal"
           component={ChartRevealDemo}
@@ -972,30 +973,6 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={300}
         />
         <Composition
-          id="color-day-for-night"
-          component={DayForNightDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="color-duotone-pulse"
-          component={DuotonePulseDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="color-flash-burst"
-          component={FlashBurstDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
           id="color-dream-haze"
           component={DreamHazeDemo}
           width={WIDTH}
@@ -1027,30 +1004,7 @@ export const RemotionRoot: React.FC = () => {
           fps={FPS}
           durationInFrames={300}
         />
-        <Composition
-          id="color-halation"
-          component={HalationDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="color-anamorphic-bloom"
-          component={AnamorphicBloomDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="color-split-tone"
-          component={SplitToneDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
+
         <Composition
           id="color-cine-mono"
           component={CineMonoDemo}
@@ -1070,6 +1024,22 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="color-film-grain"
           component={FilmGrainDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-portra"
+          component={PortraDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-neo-noir"
+          component={NeoNoirDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}

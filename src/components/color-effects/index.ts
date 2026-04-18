@@ -20,8 +20,6 @@ export { InvertStrike } from "./InvertStrike";
 export type { InvertStrikeProps } from "./InvertStrike";
 export { Halation } from "./Halation";
 export type { HalationProps } from "./Halation";
-export { AnamorphicBloom } from "./AnamorphicBloom";
-export type { AnamorphicBloomProps } from "./AnamorphicBloom";
 export { SplitTone } from "./SplitTone";
 export type { SplitToneProps } from "./SplitTone";
 export { CineMono } from "./CineMono";
@@ -30,6 +28,12 @@ export { GoldenHour } from "./GoldenHour";
 export type { GoldenHourProps } from "./GoldenHour";
 export { FilmGrain } from "./FilmGrain";
 export type { FilmGrainProps } from "./FilmGrain";
+export { CineStill } from "./CineStill";
+export type { CineStillProps } from "./CineStill";
+export { Portra } from "./Portra";
+export type { PortraProps } from "./Portra";
+export { NeoNoir } from "./NeoNoir";
+export type { NeoNoirProps } from "./NeoNoir";
 export type {
   ColorPulse,
   ColorTimingMode,

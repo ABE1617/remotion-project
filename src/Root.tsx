@@ -117,6 +117,22 @@ import {
   MGShowcaseDemo,
   MG_SHOWCASE_TOTAL_FRAMES,
 } from "./compositions/MGShowcaseDemo";
+import { CinematicGradeDemo } from "./compositions/CinematicGradeDemo";
+import { BleachBypassDemo } from "./compositions/BleachBypassDemo";
+import { VintageFilmDemo } from "./compositions/VintageFilmDemo";
+import { DayForNightDemo } from "./compositions/DayForNightDemo";
+import { DuotonePulseDemo } from "./compositions/DuotonePulseDemo";
+import { FlashBurstDemo } from "./compositions/FlashBurstDemo";
+import { DreamHazeDemo } from "./compositions/DreamHazeDemo";
+import { ChromaSplitDemo } from "./compositions/ChromaSplitDemo";
+import { VignettePulseDemo } from "./compositions/VignettePulseDemo";
+import { InvertStrikeDemo } from "./compositions/InvertStrikeDemo";
+import { HalationDemo } from "./compositions/HalationDemo";
+import { AnamorphicBloomDemo } from "./compositions/AnamorphicBloomDemo";
+import { SplitToneDemo } from "./compositions/SplitToneDemo";
+import { CineMonoDemo } from "./compositions/CineMonoDemo";
+import { GoldenHourDemo } from "./compositions/GoldenHourDemo";
+import { FilmGrainDemo } from "./compositions/FilmGrainDemo";
 
 // Video config constants
 const WIDTH = 1080;
@@ -932,13 +948,132 @@ export const RemotionRoot: React.FC = () => {
       </Folder>
       <Folder name="Color-Effects">
         <Composition
-          id="color-placeholder"
-          component={Placeholder}
+          id="color-cinematic-grade"
+          component={CinematicGradeDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
-          durationInFrames={DURATION}
-          defaultProps={{ label: "Color effects go here" }}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-bleach-bypass"
+          component={BleachBypassDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-vintage-film"
+          component={VintageFilmDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-day-for-night"
+          component={DayForNightDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-duotone-pulse"
+          component={DuotonePulseDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-flash-burst"
+          component={FlashBurstDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-dream-haze"
+          component={DreamHazeDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-chroma-split"
+          component={ChromaSplitDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-vignette-pulse"
+          component={VignettePulseDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-invert-strike"
+          component={InvertStrikeDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-halation"
+          component={HalationDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-anamorphic-bloom"
+          component={AnamorphicBloomDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-split-tone"
+          component={SplitToneDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-cine-mono"
+          component={CineMonoDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-golden-hour"
+          component={GoldenHourDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="color-film-grain"
+          component={FilmGrainDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
         />
       </Folder>
       <Folder name="Pro-Elements">

@@ -1,8 +1,6 @@
 // Motion graphics will be exported here as they are built
 export { LowerThird } from "./LowerThird";
 export type { LowerThirdProps } from "./LowerThird";
-export { SceneTitle } from "./SceneTitle";
-export type { SceneTitleProps } from "./SceneTitle";
 export { AnnotationArrow } from "./AnnotationArrow";
 export type { AnnotationArrowProps } from "./AnnotationArrow";
 export { BRollFrame } from "./BRollFrame";

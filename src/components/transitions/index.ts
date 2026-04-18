@@ -36,3 +36,6 @@ export { PanelStack, PANEL_STACK_PEAK_PROGRESS } from "./PanelStack";
 export { StepPush, STEP_PUSH_PEAK_PROGRESS } from "./StepPush";
 export { CardLift, CARD_LIFT_PEAK_PROGRESS } from "./CardLift";
 export { NewspaperWipe, NEWSPAPER_WIPE_PEAK_PROGRESS } from "./NewspaperWipe";
+export { LensBurn, LENS_BURN_PEAK_PROGRESS } from "./LensBurn";
+export { FilmStrip, FILM_STRIP_PEAK_PROGRESS } from "./FilmStrip";
+export { SceneTitle, SCENE_TITLE_PEAK_PROGRESS } from "./SceneTitle";

@@ -12,11 +12,20 @@ import type { StackProps } from "../types";
 const CARD_RADIUS = 40;
 const CARD_SCALE = 0.82;
 
-// Fake "other app" cards in the background stack
+// Fake "other app" cards in the stack — positioned to the RIGHT of B
+// because in an iOS switcher, the apps ahead of your current next-app
+// sit further right. The whole row shifts LEFT together during a swipe.
+// offsetX is in % of frame width to stay consistent with A/B's %-based
+// translates. Depth is conveyed by scale + shadow, not by transparency.
 const GHOST_CARDS = [
-  { color: "#1a1a2e", offsetX: -60, scale: 0.72, opacity: 0.3 },
-  { color: "#16213e", offsetX: -120, scale: 0.68, opacity: 0.15 },
+  { offsetX: -115, scale: 0.72 }, // one slot left of B
+  { offsetX: -180, scale: 0.68 }, // two slots left of B
 ];
+
+// Total horizontal shift of the whole stack during the slide phase.
+// Matches how far B travels (-55% → 0% = +55%), so every card in the row
+// moves by the same amount — that's what makes the row feel coherent.
+const STACK_SHIFT = 55;
 
 export const Stack: React.FC<StackProps> = ({
   clipA,
@@ -68,7 +77,10 @@ export const Stack: React.FC<StackProps> = ({
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const slideXA = interpolate(slideProgress, [0, 1], [0, -110], {
+  // A travels with the rest of the row for most of the slide (0 → +STACK_SHIFT),
+  // then keeps going past the right edge as it fades out. Same velocity as
+  // B/ghosts so the whole row reads as one coherent scroll.
+  const slideXA = interpolate(slideProgress, [0, 0.7, 1], [0, STACK_SHIFT, 110], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -77,12 +89,10 @@ export const Stack: React.FC<StackProps> = ({
     extrapolateRight: "clamp",
   });
 
-  // Card B: starts behind in stack → slides to center → zooms to full screen
-  const slideXB = interpolate(slideProgress, [0, 1], [55, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const stackScaleB = interpolate(slideProgress, [0, 1], [0.72, CARD_SCALE], {
+  // Card B: comes in from the right at the SAME size as A (CARD_SCALE)
+  // during the slide phase, then zooms to full screen in phase 3. This
+  // avoids the mismatch where A and B were different sizes mid-slide.
+  const slideXB = interpolate(slideProgress, [0, 1], [-55, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -90,7 +100,7 @@ export const Stack: React.FC<StackProps> = ({
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const scaleBTotal = progress < 0.7 ? stackScaleB : finalScaleB;
+  const scaleBTotal = progress < 0.7 ? CARD_SCALE : finalScaleB;
   const radiusB = interpolate(exitSwitcher, [0, 1], [CARD_RADIUS, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
@@ -121,7 +131,8 @@ export const Stack: React.FC<StackProps> = ({
         }}
       />
 
-      {/* Ghost cards — other "apps" in the stack */}
+      {/* Ghost cards — apps ahead of B, sitting to the right. They slide
+          left with the rest of the stack so the whole row moves together. */}
       {GHOST_CARDS.map((ghost, i) => (
         <div
           key={i}
@@ -131,8 +142,8 @@ export const Stack: React.FC<StackProps> = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            opacity: ghostOpacity * ghost.opacity,
-            transform: `translateX(${ghost.offsetX - slideProgress * 60}px) scale(${ghost.scale})`,
+            opacity: ghostOpacity,
+            transform: `translateX(${ghost.offsetX + slideProgress * STACK_SHIFT}%) scale(${ghost.scale})`,
             pointerEvents: "none",
           }}
         >
@@ -141,8 +152,8 @@ export const Stack: React.FC<StackProps> = ({
               width: "92%",
               height: "85%",
               borderRadius: CARD_RADIUS,
-              background: ghost.color,
-              boxShadow: "0 8px 30px rgba(0,0,0,0.4)",
+              background: "#ffffff",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
             }}
           />
         </div>
@@ -185,17 +196,17 @@ export const Stack: React.FC<StackProps> = ({
         </AbsoluteFill>
       )}
 
-      {/* Subtle top status bar hint — thin line at top during switcher view */}
+      {/* iOS home-bar indicator — pill at the bottom during switcher view */}
       <div
         style={{
           position: "absolute",
-          top: 12,
+          bottom: 18,
           left: "50%",
           transform: "translateX(-50%)",
-          width: 80,
-          height: 4,
-          borderRadius: 2,
-          backgroundColor: `rgba(255,255,255,${0.15 * bgOpacity})`,
+          width: 140,
+          height: 5,
+          borderRadius: 3,
+          backgroundColor: `rgba(255,255,255,${0.7 * bgOpacity})`,
           pointerEvents: "none",
         }}
       />

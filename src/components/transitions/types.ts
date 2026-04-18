@@ -172,3 +172,45 @@ export interface NewspaperWipeProps extends TransitionProps {
   // Path under /public for the newspaper image. Default "torn-newspaper.png".
   assetPath?: string;
 }
+
+export interface LensBurnProps extends TransitionProps {
+  // Burn color — the amber/orange flare tint. Default "#ffb066".
+  burnColor?: string;
+  // Overall burst intensity 0-1. Default 1.
+  intensity?: number;
+  // Horizontal anamorphic streak. Default true.
+  streak?: boolean;
+}
+
+export interface SceneTitleProps extends TransitionProps {
+  // Main title text. Use "\n" to split onto multiple lines.
+  title: string;
+  // Optional small uppercase section label (e.g. "PART 01").
+  label?: string;
+  // Panel coverage. Default "full".
+  variant?: "full" | "half-top" | "half-bottom";
+  // "dark" = ink-black panel / cream type.
+  // "light" = cream panel / ink type. Default "dark".
+  theme?: "dark" | "light";
+  // Accent divider colour. Default "#C8551F".
+  accentColor?: string;
+  // Title color override (defaults to theme's).
+  titleColor?: string;
+  // Label color override.
+  labelColor?: string;
+  // Whether to show the thin horizontal divider. Default true (when label present).
+  showDivider?: boolean;
+}
+
+export interface FilmStripProps extends TransitionProps {
+  // Near-black background inside the device frame. Default "#0b0b0b".
+  frameBackground?: string;
+  // Static caption text rendered below the tile. Optional.
+  caption?: string;
+  // Render the small bookmark icon in the top-right. Default true.
+  showBookmark?: boolean;
+  // Render the perspective grid pattern in the bottom half. Default true.
+  showGrid?: boolean;
+  // How many tiles to pass through between A and B. Default 1 (direct).
+  advanceFrames?: number;
+}

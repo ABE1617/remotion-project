@@ -5,263 +5,227 @@ import type { ShutterFlashProps } from "../types";
 export const SHUTTER_FLASH_PEAK_PROGRESS = 0.5;
 
 /**
- * ShutterFlash — Camera-shutter transition. Blade(s) sweep across the frame
- * with a brief white flash at peak closure (mimicking exposure). The leading
- * edge of each blade carries a subtle highlight stripe for shutter physicality.
+ * ShutterFlash — CRT TV power-off → power-on transition.
+ *
+ * The picture of clip A collapses vertically into a thin horizontal beam,
+ * the beam contracts horizontally into a single bright dot, the dot
+ * briefly blooms and fades. Then clip B powers on in reverse: dot opens
+ * into a horizontal beam, beam opens vertically into the full picture.
+ *
+ * Phases:
+ *   0 → 0.28    vertical collapse (scaleY → ~0)
+ *   0.28 → 0.42 horizontal collapse (scaleX → ~0)
+ *   0.42 → 0.58 bright dot holds + fades (mid-transition)
+ *   0.58 → 0.72 clip B horizontal expand (scaleX → 1)
+ *   0.72 → 1    clip B vertical expand (scaleY → 1)
  */
 export const ShutterFlash: React.FC<ShutterFlashProps> = ({
   clipA,
   clipB,
   progress,
   style,
-  blades = "dual",
-  flashColor = "#FFFFFF",
-  bladeColor = "#0A0A0A",
-  chromaticAberrationOnReveal = true,
+  flashColor = "#ffffff",
+  // `blades`, `bladeColor`, `chromaticAberrationOnReveal` kept on the
+  // interface for API compat but unused in this CRT effect.
 }) => {
-  // Blade easings: fast/committed closure, smooth release
-  const easeInCubic = Easing.bezier(0.4, 0, 1, 1);
-  const easeOutCubic = Easing.bezier(0, 0, 0.6, 1);
+  const LINE_THICKNESS = 0.006;
+  const DOT_SIZE_X = 0.015;
 
-  const showClipB = progress >= SHUTTER_FLASH_PEAK_PROGRESS;
+  const VCOLLAPSE_END = 0.28;
+  const HCOLLAPSE_END = 0.42;
+  const DOT_MID = 0.5;
+  const HEXPAND_START = 0.58;
+  const HEXPAND_END = 0.72;
 
-  // Closure progress (0 -> 1 across 0 .. 0.4). At 0.4 blades fully cover.
-  const closureY = interpolate(progress, [0, 0.4], [-100, 0], {
-    easing: easeInCubic,
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // Opening progress (0 -> 1 across 0.6 .. 1). Translate 0 -> 100 (offscreen).
-  const openingY = interpolate(progress, [0.6, 1], [0, 100], {
-    easing: easeOutCubic,
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // After closure (>=0.4) and before opening begins (<0.6), blades are held at 0.
-  const bladeY =
-    progress < 0.4 ? closureY : progress < 0.6 ? 0 : openingY;
-
-  // Flash overlay — 0 -> 1 -> 0 across the cut
-  const flashOpacity = interpolate(
+  // --- Clip A: picture → horizontal beam → dot ---
+  const aScaleY = interpolate(
     progress,
-    [0.45, 0.48, 0.52, 0.55],
-    [0, 1, 1, 0],
+    [0, VCOLLAPSE_END],
+    [1, LINE_THICKNESS],
+    {
+      easing: Easing.bezier(0.72, 0, 0.9, 1),
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    },
+  );
+  const aScaleX = interpolate(
+    progress,
+    [VCOLLAPSE_END, HCOLLAPSE_END],
+    [1, DOT_SIZE_X],
+    {
+      easing: Easing.bezier(0.5, 0, 0.9, 1),
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    },
+  );
+  const aOpacity = interpolate(progress, [HCOLLAPSE_END, DOT_MID], [1, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+  // Phosphor-glow brightness boost as the picture compresses
+  const aBrightness = interpolate(
+    progress,
+    [0, VCOLLAPSE_END, HCOLLAPSE_END],
+    [1, 1.35, 2],
     { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
   );
 
-  // Chromatic aberration strength on the incoming clip (quick decay)
-  const caStrength = interpolate(progress, [0.5, 0.55], [1, 0], {
+  // --- Clip B: dot → horizontal beam → picture ---
+  const bOpacity = interpolate(progress, [DOT_MID, HEXPAND_START], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
-  const caActive = chromaticAberrationOnReveal && showClipB && caStrength > 0.01;
-  const caOffset = 2 * caStrength;
-
-  // Fallback settle: 0.95 -> 1.0 scale on incoming if CA is disabled
-  const settleScaleB = interpolate(progress, [0.5, 0.6], [0.97, 1.0], {
-    easing: easeOutCubic,
+  const bScaleX = interpolate(
+    progress,
+    [HEXPAND_START, HEXPAND_END],
+    [DOT_SIZE_X, 1],
+    {
+      easing: Easing.bezier(0.1, 0, 0.3, 1),
+      extrapolateLeft: "clamp",
+      extrapolateRight: "clamp",
+    },
+  );
+  const bScaleY = interpolate(progress, [HEXPAND_END, 1], [LINE_THICKNESS, 1], {
+    easing: Easing.bezier(0.1, 0, 0.3, 1),
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
+  const bBrightness = interpolate(
+    progress,
+    [HEXPAND_START, HEXPAND_END, 1],
+    [2, 1.35, 1],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
 
-  const highlightColor = "rgba(255,255,255,0.15)";
-  const HIGHLIGHT_HEIGHT = 1.5;
+  // Central bright dot — peaks at mid-transition, fades symmetrically
+  const dotOpacity = interpolate(
+    progress,
+    [HCOLLAPSE_END - 0.06, DOT_MID, HEXPAND_START + 0.06],
+    [0, 1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+
+  // Soft horizontal beam glow that appears while the line is visible
+  const beamOpacity = interpolate(
+    progress,
+    [
+      VCOLLAPSE_END - 0.06,
+      VCOLLAPSE_END + 0.02,
+      HCOLLAPSE_END,
+      HCOLLAPSE_END + 0.04,
+    ],
+    [0, 1, 1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  // And again on the way back out
+  const beamOpacityB = interpolate(
+    progress,
+    [
+      HEXPAND_START - 0.04,
+      HEXPAND_START + 0.02,
+      HEXPAND_END,
+      HEXPAND_END + 0.04,
+    ],
+    [0, 1, 1, 0],
+    { extrapolateLeft: "clamp", extrapolateRight: "clamp" },
+  );
+  const totalBeamOpacity = Math.max(beamOpacity, beamOpacityB);
 
   return (
     <AbsoluteFill style={{ overflow: "hidden", background: "#000", ...style }}>
-      {/* Base clip layer */}
-      <AbsoluteFill>
-        {caActive ? (
-          <AbsoluteFill style={{ transform: `scale(${settleScaleB})` }}>
-            {/* Red channel, shifted left */}
-            <AbsoluteFill
-              style={{
-                transform: `translateX(${-caOffset}px)`,
-                mixBlendMode: "screen",
-              }}
-            >
-              <OffthreadVideo
-                src={clipB}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  filter: "url(#shutterflash-red-filter)",
-                }}
-              />
-              <svg width="0" height="0" style={{ position: "absolute" }}>
-                <defs>
-                  <filter id="shutterflash-red-filter">
-                    <feColorMatrix
-                      type="matrix"
-                      values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                    />
-                  </filter>
-                </defs>
-              </svg>
-            </AbsoluteFill>
-            {/* Green channel, center */}
-            <AbsoluteFill style={{ mixBlendMode: "screen" }}>
-              <OffthreadVideo
-                src={clipB}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  filter: "url(#shutterflash-green-filter)",
-                }}
-              />
-              <svg width="0" height="0" style={{ position: "absolute" }}>
-                <defs>
-                  <filter id="shutterflash-green-filter">
-                    <feColorMatrix
-                      type="matrix"
-                      values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                    />
-                  </filter>
-                </defs>
-              </svg>
-            </AbsoluteFill>
-            {/* Blue channel, shifted right */}
-            <AbsoluteFill
-              style={{
-                transform: `translateX(${caOffset}px)`,
-                mixBlendMode: "screen",
-              }}
-            >
-              <OffthreadVideo
-                src={clipB}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  filter: "url(#shutterflash-blue-filter)",
-                }}
-              />
-              <svg width="0" height="0" style={{ position: "absolute" }}>
-                <defs>
-                  <filter id="shutterflash-blue-filter">
-                    <feColorMatrix
-                      type="matrix"
-                      values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
-                    />
-                  </filter>
-                </defs>
-              </svg>
-            </AbsoluteFill>
-          </AbsoluteFill>
-        ) : (
-          <AbsoluteFill
-            style={{
-              transform: showClipB ? `scale(${settleScaleB})` : undefined,
-            }}
-          >
-            <OffthreadVideo
-              src={showClipB ? clipB : clipA}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          </AbsoluteFill>
-        )}
-      </AbsoluteFill>
-
-      {/* Blades */}
-      {blades === "dual" ? (
-        <>
-          {/* Top blade — slides down from -100% to 0, then up to -100% */}
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "50%",
-              background: bladeColor,
-              transform: `translateY(${
-                progress < 0.6 ? bladeY : -openingY
-              }%)`,
-              willChange: "transform",
-            }}
-          >
-            {/* Highlight edge on the bottom (center-facing) edge */}
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                width: "100%",
-                height: HIGHLIGHT_HEIGHT,
-                background: highlightColor,
-              }}
-            />
-          </div>
-
-          {/* Bottom blade — slides up from 100% to 0, then down to 100% */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              width: "100%",
-              height: "50%",
-              background: bladeColor,
-              transform: `translateY(${
-                progress < 0.6 ? -bladeY : openingY
-              }%)`,
-              willChange: "transform",
-            }}
-          >
-            {/* Highlight edge on the top (center-facing) edge */}
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: HIGHLIGHT_HEIGHT,
-                background: highlightColor,
-              }}
-            />
-          </div>
-        </>
-      ) : (
-        /* Single blade — slides down from -100% to 0, then off to 100% */
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: bladeColor,
-            transform: `translateY(${bladeY}%)`,
-            willChange: "transform",
-          }}
-        >
-          {/* Highlight on the leading (bottom) edge */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              width: "100%",
-              height: HIGHLIGHT_HEIGHT,
-              background: highlightColor,
-            }}
-          />
-        </div>
-      )}
-
-      {/* White flash overlay — the signature frame */}
-      {flashOpacity > 0.001 && (
+      {/* Clip A — collapsing picture */}
+      {aOpacity > 0.01 && (
         <AbsoluteFill
           style={{
-            background: flashColor,
-            opacity: flashOpacity,
-            pointerEvents: "none",
+            transform: `scaleX(${aScaleX}) scaleY(${aScaleY})`,
+            transformOrigin: "center center",
+            opacity: aOpacity,
+            filter: `brightness(${aBrightness})`,
+            willChange: "transform, filter",
           }}
-        />
+        >
+          <OffthreadVideo
+            src={clipA}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </AbsoluteFill>
+      )}
+
+      {/* Clip B — expanding picture */}
+      {bOpacity > 0.01 && (
+        <AbsoluteFill
+          style={{
+            transform: `scaleX(${bScaleX}) scaleY(${bScaleY})`,
+            transformOrigin: "center center",
+            opacity: bOpacity,
+            filter: `brightness(${bBrightness})`,
+            willChange: "transform, filter",
+          }}
+        >
+          <OffthreadVideo
+            src={clipB}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </AbsoluteFill>
+      )}
+
+      {/* Horizontal beam glow — reinforces the "thin line" moment */}
+      {totalBeamOpacity > 0.001 && (
+        <AbsoluteFill
+          style={{
+            pointerEvents: "none",
+            opacity: totalBeamOpacity,
+            mixBlendMode: "screen",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              top: "50%",
+              height: 4,
+              transform: "translateY(-50%)",
+              background: `linear-gradient(90deg,
+                transparent 0%,
+                ${flashColor}33 10%,
+                ${flashColor} 50%,
+                ${flashColor}33 90%,
+                transparent 100%)`,
+              boxShadow: `0 0 24px 4px ${flashColor}66`,
+              filter: "blur(1px)",
+            }}
+          />
+        </AbsoluteFill>
+      )}
+
+      {/* Central bright dot + bloom at mid-transition */}
+      {dotOpacity > 0.001 && (
+        <AbsoluteFill
+          style={{
+            pointerEvents: "none",
+            opacity: dotOpacity,
+            mixBlendMode: "screen",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: 28,
+              height: 28,
+              transform: "translate(-50%, -50%)",
+              borderRadius: "50%",
+              background: flashColor,
+              boxShadow: [
+                `0 0 40px 10px ${flashColor}`,
+                `0 0 100px 30px ${flashColor}aa`,
+                `0 0 220px 60px ${flashColor}55`,
+              ].join(", "),
+            }}
+          />
+        </AbsoluteFill>
       )}
     </AbsoluteFill>
   );

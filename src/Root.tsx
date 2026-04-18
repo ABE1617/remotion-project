@@ -85,6 +85,9 @@ import { PanelStackTransitionDemo } from "./compositions/PanelStackTransitionDem
 import { StepPushTransitionDemo } from "./compositions/StepPushTransitionDemo";
 import { CardLiftTransitionDemo } from "./compositions/CardLiftTransitionDemo";
 import { NewspaperWipeTransitionDemo } from "./compositions/NewspaperWipeTransitionDemo";
+import { LensBurnTransitionDemo } from "./compositions/LensBurnTransitionDemo";
+import { FilmStripTransitionDemo } from "./compositions/FilmStripTransitionDemo";
+import { SceneTitleTransitionDemo } from "./compositions/SceneTitleTransitionDemo";
 import { IlluminateDemo } from "./Testing/Illuminate/IlluminateDemo";
 import { GravityDemo } from "./Testing/Gravity/GravityDemo";
 import { TrackDemo } from "./Testing/Track/TrackDemo";
@@ -96,8 +99,6 @@ import { GadzhiDemo } from "./Testing/Gadzhi/GadzhiDemo";
 import { TitanDemo } from "./Testing/Titan/TitanDemo";
 import { LowerThirdDemo } from "./compositions/LowerThirdDemo";
 import { LowerThirdLightDemo } from "./compositions/LowerThirdLightDemo";
-import { SceneTitleDemo } from "./compositions/SceneTitleDemo";
-import { SceneTitleLightDemo } from "./compositions/SceneTitleLightDemo";
 import { AnnotationArrowDemo } from "./compositions/AnnotationArrowDemo";
 import { BRollFrameDemo } from "./compositions/BRollFrameDemo";
 import { QuoteCardDemo } from "./compositions/QuoteCardDemo";
@@ -584,14 +585,6 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={300}
         />
         <Composition
-          id="transition-cube"
-          component={CubeTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
           id="transition-zoom-through"
           component={ZoomThroughTransitionDemo}
           width={WIDTH}
@@ -602,22 +595,6 @@ export const RemotionRoot: React.FC = () => {
         <Composition
           id="transition-slide-over"
           component={SlideOverTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-flip"
-          component={FlipTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-morph"
-          component={MorphTransitionDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
@@ -639,65 +616,10 @@ export const RemotionRoot: React.FC = () => {
           fps={FPS}
           durationInFrames={300}
         />
-        <Composition
-          id="transition-flash-cut"
-          component={FlashCutTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-zoom-punch"
-          component={ZoomPunchTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-mask-wipe"
-          component={MaskWipeTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-motion-blur-slide"
-          component={MotionBlurSlideTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-whip-pan"
-          component={WhipPanTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
+
         <Composition
           id="transition-shutter-flash"
           component={ShutterFlashTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-blur-dissolve"
-          component={BlurDissolveTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-glitch"
-          component={GlitchTransitionDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
@@ -712,62 +634,6 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={300}
         />
         <Composition
-          id="transition-film-burn"
-          component={FilmBurnTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-shake"
-          component={ShakeTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-dolly-zoom"
-          component={DollyZoomTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-inversion"
-          component={InversionTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-iris"
-          component={IrisTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-anamorphic-streak"
-          component={AnamorphicStreakTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
-          id="transition-panel-stack"
-          component={PanelStackTransitionDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={300}
-        />
-        <Composition
           id="transition-step-push"
           component={StepPushTransitionDemo}
           width={WIDTH}
@@ -776,16 +642,24 @@ export const RemotionRoot: React.FC = () => {
           durationInFrames={300}
         />
         <Composition
-          id="transition-card-lift"
-          component={CardLiftTransitionDemo}
+          id="transition-newspaper-wipe"
+          component={NewspaperWipeTransitionDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
           durationInFrames={300}
         />
         <Composition
-          id="transition-newspaper-wipe"
-          component={NewspaperWipeTransitionDemo}
+          id="transition-film-strip"
+          component={FilmStripTransitionDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={300}
+        />
+        <Composition
+          id="transition-scene-title"
+          component={SceneTitleTransitionDemo}
           width={WIDTH}
           height={HEIGHT}
           fps={FPS}
@@ -817,22 +691,6 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={180}
-        />
-        <Composition
-          id="mg-scene-title"
-          component={SceneTitleDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={150}
-        />
-        <Composition
-          id="mg-scene-title-light"
-          component={SceneTitleLightDemo}
-          width={WIDTH}
-          height={HEIGHT}
-          fps={FPS}
-          durationInFrames={150}
         />
         <Composition
           id="mg-broll-frame"
@@ -1004,7 +862,6 @@ export const RemotionRoot: React.FC = () => {
           fps={FPS}
           durationInFrames={300}
         />
-
         <Composition
           id="color-cine-mono"
           component={CineMonoDemo}

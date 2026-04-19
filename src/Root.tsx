@@ -97,6 +97,8 @@ import { WarmGlowDemo } from "./Testing/WarmGlow/WarmGlowDemo";
 import { AuraDemo } from "./Testing/Aura/AuraDemo";
 import { GadzhiDemo } from "./Testing/Gadzhi/GadzhiDemo";
 import { TitanDemo } from "./Testing/Titan/TitanDemo";
+import { OverprintDemo } from "./Testing/Overprint/OverprintDemo";
+import { PassageDemo } from "./Testing/Passage/PassageDemo";
 import { LowerThirdDemo } from "./compositions/LowerThirdDemo";
 import { LowerThirdLightDemo } from "./compositions/LowerThirdLightDemo";
 import { AnnotationArrowDemo } from "./compositions/AnnotationArrowDemo";
@@ -515,6 +517,22 @@ export const RemotionRoot: React.FC = () => {
           height={HEIGHT}
           fps={FPS}
           durationInFrames={300}
+        />
+        <Composition
+          id="caption-overprint"
+          component={OverprintDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={240}
+        />
+        <Composition
+          id="caption-passage"
+          component={PassageDemo}
+          width={WIDTH}
+          height={HEIGHT}
+          fps={FPS}
+          durationInFrames={250}
         />
       </Folder>
       <Folder name="Zoom-Effects">
